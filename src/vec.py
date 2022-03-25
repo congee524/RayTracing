@@ -1,8 +1,4 @@
 import math
-from typing import Type
-import numpy as np
-
-EPS = 1E-12
 
 
 class Vec3():
@@ -121,9 +117,8 @@ class Vec3():
 
     def __eq__(self, other):
         if isinstance(other, Vec3):
-            return (math.abs(self.x - other.x) <
-                    EPS) and (math.abs(self.y - other.y) <
-                              EPS) and (math.abs(self.z - other.z) < EPS)
+            return math.isclose(self.x - other.x, 0.) and math.isclose(
+                self.y - other.y, 0.) and math.isclose(self.z - other.z, 0.)
         else:
             return False
 
