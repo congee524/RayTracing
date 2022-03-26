@@ -1,21 +1,45 @@
-from vec import Vec3
-from hittable import Hittable
+import math
+
+from vec import Point
+from ray import Ray
+from hittable import Hittable, HitRecord
 
 
 class Sphere(Hittable):
 
     def __init__(self, center, radius, name='Sphere'):
-        if not isinstance(center, Vec3):
-            raise TypeError("Center point must be Point!")
-
-        if isinstance(radius, float) or isinstance(radius, int):
-            raidus = float(raidus)
-        else:
-            raise TypeError("Raidus must be scalar!")
+        assert isinstance(center, Point), "Center point must be Point"
+        assert isinstance(radius, (float, int)), "Raidus must be scalar"
 
         self.center = center
-        self.radius = radius
+        self.radius = float(radius)
 
-    def hit(self, ray, t_min, t_max, hit_record):
+    def hit(self, r, t_min, t_max, rec):
         # only record the nearest intersection
-        pass
+        assert isinstance(r, Ray), "r must be Ray"
+        assert isinstance(rec, HitRecord), "rec must be HitRecord"
+        assert isinstance(t_min, (float, int)), "t_min must be scalar"
+        assert isinstance(t_max, (float, int)), "t_max must be scalar"
+
+        oc = r.origin() - self.center
+        a = r.direction() * r.direction()
+        half_b = oc * r.direction()
+        c = oc * oc - self.radius * self.radius
+        discriminant = half_b * half_b - a * c
+
+        if discriminant < 0:
+            return False
+
+        sqrtd = math.sqrt(discriminant)
+
+        root = (-half_b - sqrtd) / a
+        if root < t_min or root > t_max:
+            root = (-half_b + sqrtd) / a
+            if root < t_min or root > t_max:
+                return False
+
+        rec.t = root
+        rec.p = Point(r.at(rec.t))
+        rec.normal = (rec.p - self.center) / self.radius
+
+        return True

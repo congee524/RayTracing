@@ -1,11 +1,11 @@
-from vec import Vec3
+from vec import Vec3, Point
 
 
 class Ray():
 
     def __init__(self, origin, direction):
-        if not (isinstance(origin, Vec3) and isinstance(direction, Vec3)):
-            raise TypeError("origin & direction must be Vec3!")
+        if not (isinstance(origin, Point) and isinstance(direction, Vec3)):
+            raise TypeError("origin & direction must be Point & Vec3")
 
         self.orig = origin
         self.dir = direction

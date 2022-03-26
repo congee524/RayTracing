@@ -10,7 +10,7 @@ class Hittable(ABC):
         self.name = name
 
     @abstractmethod
-    def hit(self, ray, t_min, t_max, hit_record):
+    def hit(self, r, t_min, t_max, rec):
         pass
 
 
@@ -25,14 +25,11 @@ class HitRecord():
             normal = Vec3()
         else:
             assert isinstance(normal, Vec3), "normal must be Vec3"
-        if isinstance(t, float) or isinstance(t, int):
-            t = float(t)
-        else:
-            raise TypeError('t must be scalar')
+        assert isinstance(t, (float, int)), "t must be scalar"
 
         self.p = p
         self.normal = normal
-        self.t = t
+        self.t = float(t)
 
     def __repr__(self):
         return f"HitRecord at ({self.p}) with normal ({self.normal}) and t ({self.t})"

@@ -8,9 +8,9 @@ class Vec3():
             self.x, self.y, self.z = (0.0, 0.0, 0.0)
         elif len(args) == 1:
             arg = args[0]
-            if isinstance(arg, float) or isinstance(arg, int):
+            if isinstance(arg, (float, int)):
                 self.x, self.y, self.z = (arg, arg, arg)
-            elif isinstance(arg, tuple) or isinstance(arg, list):
+            elif isinstance(arg, (tuple, list)):
                 assert len(arg) == 3, "Length of tuple or list must be 3!"
                 self.x, self.y, self.z = arg
             elif isinstance(arg, Vec3):
@@ -39,7 +39,7 @@ class Vec3():
 
     def __setitem__(self, key, val):
         assert isinstance(key, int), "index must be integer"
-        if isinstance(val, float) or isinstance(val, int):
+        if isinstance(val, (float, int)):
             val = float(val)
         else:
             raise TypeError("Wrong type of value!")
@@ -68,7 +68,7 @@ class Vec3():
         if isinstance(other, Vec3):
             # inner product
             return self.x * other.x + self.y * other.y + self.z * other.z
-        elif isinstance(other, float) or isinstance(other, int):
+        elif isinstance(other, (float, int)):
             return Vec3(self.x * other, self.y * other, self.z * other)
         else:
             if getattr(other, "__rmul__", None) != None:
@@ -79,7 +79,7 @@ class Vec3():
     __rmul__ = __mul__
 
     def __div__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (float, int)):
             return Vec3(self.x / other, self.y / other, self.z / other)
         else:
             raise TypeError("Unsupported operand type for /")
@@ -103,7 +103,7 @@ class Vec3():
             raise TypeError("Unsupported operand type for -=")
 
     def __imul__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (float, int)):
             self.x *= other
             self.y *= other
             self.z *= other
@@ -112,7 +112,7 @@ class Vec3():
             raise TypeError("Unsupported operand type for *=")
 
     def __idiv__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (float, int)):
             self.x /= other
             self.y /= other
             self.z /= other
