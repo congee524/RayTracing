@@ -71,7 +71,12 @@ class Vec3():
         elif isinstance(other, float) or isinstance(other, int):
             return Vec3(self.x * other, self.y * other, self.z * other)
         else:
-            raise TypeError("Unsupported operand type for *")
+            if getattr(other, "__rmul__", None) != None:
+                return other.__rmul__(self)
+            else:
+                raise TypeError("Unsupported operand type for *")
+
+    __rmul__ = __mul__
 
     def __div__(self, other):
         if isinstance(other, float) or isinstance(other, int):
@@ -129,7 +134,7 @@ class Vec3():
         return 3
 
     def __repr__(self):
-        return f"vec3: x={self.x}, y={self.y}, z={self.z}"
+        return f"{self.__class__.__name__} ({self.x}, {self.y}, {self.z})"
 
     def length(self):
         return math.sqrt(self * self)
@@ -145,3 +150,11 @@ class Vec3():
     def normalize(self):
         length = self.length()
         return self / length
+
+
+class Point(Vec3):
+    pass
+
+
+class Color(Vec3):
+    pass
