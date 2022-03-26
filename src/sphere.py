@@ -1,8 +1,8 @@
 from vec import Vec3
-from object import Object
+from hittable import Hittable
 
 
-class Sphere(Object):
+class Sphere(Hittable):
 
     def __init__(self, center, radius, name='Sphere'):
         if not isinstance(center, Vec3):
@@ -16,5 +16,6 @@ class Sphere(Object):
         self.center = center
         self.radius = radius
 
-    def hit(self, ray, hit_record):
+    def hit(self, ray, t_min, t_max, hit_record):
+        # only record the nearest intersection
         pass
