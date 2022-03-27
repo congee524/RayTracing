@@ -71,14 +71,14 @@ class Vec3():
         elif isinstance(other, (float, int)):
             return Vec3(self.x * other, self.y * other, self.z * other)
         else:
-            if getattr(other, "__rmul__", None) != None:
+            if hasattr(other, "__rmul__"):
                 return other.__rmul__(self)
             else:
                 raise TypeError("Unsupported operand type for *")
 
     __rmul__ = __mul__
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, (float, int)):
             return Vec3(self.x / other, self.y / other, self.z / other)
         else:
@@ -111,7 +111,7 @@ class Vec3():
         else:
             raise TypeError("Unsupported operand type for *=")
 
-    def __idiv__(self, other):
+    def __itruediv__(self, other):
         if isinstance(other, (float, int)):
             self.x /= other
             self.y /= other
