@@ -6,6 +6,7 @@ import os.path as osp
 
 import numpy as np
 import cv2
+from joblib import Parallel, delayed
 
 from vec import Vec3, Point, Color
 from ray import Ray
@@ -33,8 +34,7 @@ def ray_tracing(scene_file, output_file):
 
     rows = 200
     columns = 100
-    img = np.zeros((columns, rows, 3), float)
-    samples = 5
+    samples = 100
 
     camera = Camera()
 
@@ -43,16 +43,25 @@ def ray_tracing(scene_file, output_file):
     world.append(Sphere(Point(0.0, -100.5, -1.0), 100.0))
     world.append(Sphere(Point(0.0, 102.5, -1.0), 100.0))
 
-    for j, i in itertools.product(reversed(range(columns)), range(rows)):
-        for _ in range(samples):
-            u = float(i + random.random()) / rows
-            v = float(j + random.random()) / columns
-            ray_r = camera.get_ray(u, v)
-            color = cal_color(ray_r, world)
-            img[j][i] += color
-        img[j][i] /= samples
+    def cal_ray_tracing(i, j):
+        u = float(i + random.random()) / rows
+        v = float(j + random.random()) / columns
+        ray_r = camera.get_ray(u, v)
+        color = cal_color(ray_r, world)
+        return (i, j, color)
 
+    results = Parallel(n_jobs=-1)(
+        delayed(cal_ray_tracing)(i, j)
+        for i, j in itertools.product(range(rows), range(columns))
+        for _ in range(samples))
+
+    img = np.zeros((rows, columns, 3), float)
+    for i, j, color in results:
+        img[i][j] += color
+    img /= samples
     img = (img * 255.99).astype(int)
+
+    img = img.transpose(1, 0, 2)
     cv2.imwrite(f_out_name, img[::-1, :, ::-1])
 
 
