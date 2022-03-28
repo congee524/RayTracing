@@ -9,15 +9,18 @@ import cv2
 from vec import Vec3, Point, Color
 from ray import Ray
 from sphere import Sphere
+from hittable import HitRecord
+from hittable_list import HittableList
 
 
-def cal_color(r, obj_list):
+def cal_color(r, world):
     assert isinstance(r, Ray), "r must be Ray"
     # TODO: just put a shpere at (0, 0, -1) with radius 0.5 now
-    sphere = obj_list[0]
+    hit_rec = HitRecord()
 
-    if sphere.hit(r, 0, 2):
-        return Color(1, 0, 0)
+    if world.hit(r, 0, float('inf'), hit_rec):
+        hit_rec.normal = hit_rec.normal.normalize()
+        return Color(hit_rec.normal * 0.5 + Vec3(0.5))
 
     t = 0.5 * r.direction().normalize().y + 0.5
 
@@ -36,14 +39,16 @@ def ray_tracing(scene_file, output_file):
     vertical = Vec3(0.0, 2.0, 0.0)
     origin = Point(0.0, 0.0, 0.0)
 
-    obj_list = []
-    obj_list.append(Sphere(Point(0, 0, -1), 0.5))
+    world = HittableList()
+    world.append(Sphere(Point(0, 0, -1), 0.5))
+    world.append(Sphere(Point(0.0, -100.5, -1.0), 100.0))
+    world.append(Sphere(Point(0.0, 102.5, -1.0), 100.0))
 
     for j, i in itertools.product(reversed(range(columns)), range(rows)):
         u = float(i) / rows
         v = float(j) / columns
         ray_r = Ray(origin, lower_left_corner + horizontal * u + vertical * v)
-        color = cal_color(ray_r, obj_list)
+        color = cal_color(ray_r, world)
         img[j][i] = color
 
     img = (img * 255.99).astype(int)

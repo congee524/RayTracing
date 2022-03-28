@@ -157,4 +157,9 @@ class Point(Vec3):
 
 
 class Color(Vec3):
-    pass
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        assert 0. <= self.x <= 1., "r must in [0., 1.]"
+        assert 0. <= self.y <= 1., "g must in [0., 1.]"
+        assert 0. <= self.z <= 1., "b must in [0., 1.]"
