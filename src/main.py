@@ -1,7 +1,8 @@
 import time
-import os.path as osp
 import argparse
 import itertools
+import random
+import os.path as osp
 
 import numpy as np
 import cv2
@@ -11,16 +12,16 @@ from ray import Ray
 from sphere import Sphere
 from hittable import HitRecord
 from hittable_list import HittableList
+from camera import Camera
 
 
 def cal_color(r, world):
     assert isinstance(r, Ray), "r must be Ray"
-    # TODO: just put a shpere at (0, 0, -1) with radius 0.5 now
     hit_rec = HitRecord()
 
     if world.hit(r, 0, float('inf'), hit_rec):
         hit_rec.normal = hit_rec.normal.normalize()
-        return Color(hit_rec.normal * 0.5 + Vec3(0.5))
+        return Color(0.5 * (hit_rec.normal + Vec3(1)))
 
     t = 0.5 * r.direction().normalize().y + 0.5
 
@@ -33,11 +34,9 @@ def ray_tracing(scene_file, output_file):
     rows = 200
     columns = 100
     img = np.zeros((columns, rows, 3), float)
+    samples = 5
 
-    lower_left_corner = Vec3(-2, -1, -1)
-    horizontal = Vec3(4.0, 0.0, 0.0)
-    vertical = Vec3(0.0, 2.0, 0.0)
-    origin = Point(0.0, 0.0, 0.0)
+    camera = Camera()
 
     world = HittableList()
     world.append(Sphere(Point(0, 0, -1), 0.5))
@@ -45,11 +44,13 @@ def ray_tracing(scene_file, output_file):
     world.append(Sphere(Point(0.0, 102.5, -1.0), 100.0))
 
     for j, i in itertools.product(reversed(range(columns)), range(rows)):
-        u = float(i) / rows
-        v = float(j) / columns
-        ray_r = Ray(origin, lower_left_corner + horizontal * u + vertical * v)
-        color = cal_color(ray_r, world)
-        img[j][i] = color
+        for _ in range(samples):
+            u = float(i + random.random()) / rows
+            v = float(j + random.random()) / columns
+            ray_r = camera.get_ray(u, v)
+            color = cal_color(ray_r, world)
+            img[j][i] += color
+        img[j][i] /= samples
 
     img = (img * 255.99).astype(int)
     cv2.imwrite(f_out_name, img[::-1, :, ::-1])
