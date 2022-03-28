@@ -24,7 +24,7 @@ def cal_color(r, world, depth):
 
     hit_rec = HitRecord()
 
-    if world.hit(r, 0, float('inf'), hit_rec):
+    if world.hit(r, 0.001, float('inf'), hit_rec):
         scattered = Ray(Point(), Vec3())
         attenuation = Color()
         hit_rec.material.scatter(r, hit_rec, attenuation, scattered)
