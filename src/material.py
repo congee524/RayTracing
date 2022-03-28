@@ -46,15 +46,19 @@ class Lambertian(Material):
 
 class Metal(Material):
 
-    def __init__(self, albedo=None):
+    def __init__(self, albedo=None, fuzz=0.):
         if albedo is None:
             albedo = Color(0.8, 0.3, 0.3)
         self.albedo = albedo
+        fuzz = float(fuzz)
+        fuzz = fuzz if fuzz >= 0 else 0.
+        fuzz = fuzz if fuzz <= 1 else 1.
+        self.fuzz = fuzz
 
     def scatter(self, r_in, rec, attenuation, scattered):
         reflect_dir = Metal.reflect(r_in.direction().normalize(), rec.normal)
         scattered.orig = rec.p
-        scattered.dir = reflect_dir
+        scattered.dir = reflect_dir + self.fuzz * Material.random_unit_sphere()
         for i in range(3):
             attenuation[i] = self.albedo[i]
         return not math.isclose(reflect_dir * rec.normal, 0.)
