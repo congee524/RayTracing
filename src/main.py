@@ -1,8 +1,10 @@
-from curses.ascii import SP
 import time
 import os.path as osp
 import argparse
 import itertools
+
+import numpy as np
+import cv2
 
 from vec import Vec3, Point, Color
 from ray import Ray
@@ -14,7 +16,7 @@ def cal_color(r, obj_list):
     # TODO: just put a shpere at (0, 0, -1) with radius 0.5 now
     sphere = obj_list[0]
 
-    if sphere.hit(r, -100, 100):
+    if sphere.hit(r, 0, 2):
         return Color(1, 0, 0)
 
     t = 0.5 * r.direction().normalize().y + 0.5
@@ -24,13 +26,10 @@ def cal_color(r, obj_list):
 
 def ray_tracing(scene_file, output_file):
     f_out_name = osp.join(osp.dirname(__file__), "..", output_file)
-    f_out = open(f_out_name, 'w')
 
     rows = 200
     columns = 100
-
-    title = f"P3\n{rows} {columns}\n255\n"
-    f_out.write(title)
+    img = np.zeros((columns, rows, 3), float)
 
     lower_left_corner = Vec3(-2, -1, -1)
     horizontal = Vec3(4.0, 0.0, 0.0)
@@ -45,10 +44,10 @@ def ray_tracing(scene_file, output_file):
         v = float(j) / columns
         ray_r = Ray(origin, lower_left_corner + horizontal * u + vertical * v)
         color = cal_color(ray_r, obj_list)
-        ir, ig, ib = [int(255.99 * val) for val in color]
-        f_out.write(f"{ir} {ig} {ib}\n")
+        img[j][i] = color
 
-    f_out.close()
+    img = (img * 255.99).astype(int)
+    cv2.imwrite(f_out_name, img[::-1, :, ::-1])
 
 
 def parse_args():
@@ -60,7 +59,7 @@ def parse_args():
                         help='scene file')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_1.ppm',
+                        default='output/output_1.jpg',
                         help='output file')
     args = parser.parse_args()
 
