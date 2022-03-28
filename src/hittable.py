@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 
+from numpy import mat
+
 from vec import Vec3, Point
+from material import Material
 
 
 class Hittable(ABC):
-
-    def __init__(self, name='object'):
-        assert isinstance(name, str), "name of object must be str"
-        self.name = name
 
     @abstractmethod
     def hit(self, r, t_min, t_max, rec):
@@ -16,7 +15,7 @@ class Hittable(ABC):
 
 class HitRecord():
 
-    def __init__(self, p=None, normal=None, t=0.):
+    def __init__(self, p=None, normal=None, t=0., material=None):
         if p is None:
             p = Point()
         else:
@@ -27,9 +26,12 @@ class HitRecord():
             assert isinstance(normal, Vec3), "normal must be Vec3"
         assert isinstance(t, (float, int)), "t must be scalar"
 
+        assert (material is None) or isinstance(material, Material)
+
         self.p = p
         self.normal = normal
         self.t = float(t)
+        self.material = material
 
     def __repr__(self):
         return f"HitRecord at ({self.p}) with normal ({self.normal}) and t ({self.t})"

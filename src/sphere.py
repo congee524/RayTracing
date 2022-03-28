@@ -3,16 +3,19 @@ import math
 from vec import Point
 from ray import Ray
 from hittable import Hittable, HitRecord
+from material import Material
 
 
 class Sphere(Hittable):
 
-    def __init__(self, center, radius, name='Sphere'):
+    def __init__(self, center, radius, material):
         assert isinstance(center, Point), "Center point must be Point"
         assert isinstance(radius, (float, int)), "Raidus must be scalar"
+        assert isinstance(material, Material), 'material must be Material'
 
         self.center = center
         self.radius = float(radius)
+        self.material = material
 
     def hit(self, r, t_min, t_max, rec):
         # only record the nearest intersection
@@ -41,5 +44,6 @@ class Sphere(Hittable):
         rec.t = root
         rec.p = Point(r.at(rec.t))
         rec.normal = (rec.p - self.center) / self.radius
+        rec.material = self.material
 
         return True

@@ -1,5 +1,3 @@
-from numpy import isin
-from vec import Point
 from ray import Ray
 from hittable import Hittable, HitRecord
 
@@ -41,5 +39,6 @@ class HittableList(Hittable):
                     rec.t = temp_hit_rec.t
                     rec.p = temp_hit_rec.p
                     rec.normal = temp_hit_rec.normal
+                    rec.material = temp_hit_rec.material
 
         return hit_anything
