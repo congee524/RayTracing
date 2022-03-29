@@ -41,7 +41,9 @@ def ray_tracing(output_file):
     columns = 100
     samples = 100
 
-    camera = Camera()
+    # camera = Camera()
+    camera = Camera(Point(-2, 2, 1), Point(0, 0, -1), Vec3(0, 1, 0), 20,
+                    float(rows) / float(columns))
 
     import scene.example as scene
     world = scene.world
