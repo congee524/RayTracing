@@ -3,9 +3,9 @@ import argparse
 import itertools
 import random
 import os.path as osp
+from turtle import color
 
 import numpy as np
-import cv2
 from joblib import Parallel, delayed
 
 from vec import Vec3, Point, Color
@@ -15,34 +15,45 @@ from hittable_list import HittableList
 from camera import Camera
 
 
+def write_ppm_file(output_file, img, rows, columns):
+    f_out_name = osp.join(osp.dirname(__file__), "..", output_file)
+    with open(f_out_name, 'w') as f:
+        title = f'P3\n{rows} {columns}\n255\n'
+        f.write(title)
+        for j in reversed(range(columns)):
+            for i in range(rows):
+                ir, ig, ib = img[j][i]
+                f.write(f'{ir} {ig} {ib}\n')
+
+
 def cal_color(r, world, depth):
     assert isinstance(r, Ray), "r must be Ray"
     assert isinstance(world, HittableList), 'world must be HittableList'
     assert isinstance(depth, int), 'depth must be int'
-    if depth >= 50:
-        return Vec3(0)
 
     hit_rec = HitRecord()
 
     if world.hit(r, 0.001, float('inf'), hit_rec):
         scattered = Ray(Point(), Vec3())
         attenuation = Color()
-        hit_rec.material.scatter(r, hit_rec, attenuation, scattered)
-        return attenuation * cal_color(scattered, world, depth + 1)
+        res = hit_rec.material.scatter(r, hit_rec, attenuation, scattered)
+        if depth < 2 and res:
+            return attenuation * cal_color(scattered, world, depth + 1)
+        return Color(0)
 
     t = 0.5 * r.direction().normalize().y + 0.5
     return (1.0 - t) * Color(1, 1, 1) + t * Color(0.5, 0.7, 1.0)
 
 
 def ray_tracing(output_file):
-    f_out_name = osp.join(osp.dirname(__file__), "..", output_file)
-
     rows = 200
     columns = 100
     samples = 100
 
     # camera = Camera()
-    camera = Camera(Point(-2, 2, 1), Point(0, 0, -1), Vec3(0, 1, 0), 20,
+    # camera = Camera(Point(-1.5, 2, 0.5), Point(0, 0, -1), Vec3(0, 1, 0), 90,
+    #                 float(rows) / float(columns))
+    camera = Camera(Point(0), Point(0, 0, -1), Vec3(0, 1, 0), 90,
                     float(rows) / float(columns))
 
     import scene.example as scene
@@ -64,10 +75,11 @@ def ray_tracing(output_file):
     for i, j, color in results:
         img[i][j] += color
     img /= samples
-    img = (img * 255.99).astype(int)
+    img = (np.sqrt(img) * 255.99).astype(int)
 
     img = img.transpose(1, 0, 2)
-    cv2.imwrite(f_out_name, img[::-1, :, ::-1])
+
+    write_ppm_file(output_file, img, rows, columns)
 
 
 def parse_args():
@@ -75,7 +87,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_1.jpg',
+                        default='output/output_2.ppm',
                         help='output file')
     args = parser.parse_args()
 

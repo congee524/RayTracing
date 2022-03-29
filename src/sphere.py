@@ -36,9 +36,9 @@ class Sphere(Hittable):
         sqrtd = math.sqrt(discriminant)
 
         root = (-half_b - sqrtd) / a
-        if root < t_min or root > t_max:
+        if root <= t_min or root >= t_max:
             root = (-half_b + sqrtd) / a
-            if root < t_min or root > t_max:
+            if root <= t_min or root >= t_max:
                 return False
 
         rec.t = root

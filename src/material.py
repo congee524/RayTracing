@@ -61,7 +61,7 @@ class Metal(Material):
         scattered.dir = reflect_dir + self.fuzz * Material.random_unit_sphere()
         for i in range(3):
             attenuation[i] = self.albedo[i]
-        return not math.isclose(reflect_dir * rec.normal, 0.)
+        return reflect_dir * rec.normal > 0
 
     def reflect(r_in, normal):
-        return r_in - 2 * (r_in * normal) * normal
+        return r_in - normal * (2 * (r_in * normal))

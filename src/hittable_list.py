@@ -33,12 +33,11 @@ class HittableList(Hittable):
 
         for hittable_obj in self.objs:
             if hittable_obj.hit(r, t_min, temp_t, temp_hit_rec):
-                if temp_t > temp_hit_rec.t:
-                    hit_anything = True
-                    temp_t = temp_hit_rec.t
-                    rec.t = temp_hit_rec.t
-                    rec.p = temp_hit_rec.p
-                    rec.normal = temp_hit_rec.normal
-                    rec.material = temp_hit_rec.material
+                hit_anything = True
+                temp_t = temp_hit_rec.t
+                rec.t = temp_hit_rec.t
+                rec.p = temp_hit_rec.p
+                rec.normal = temp_hit_rec.normal
+                rec.material = temp_hit_rec.material
 
         return hit_anything
