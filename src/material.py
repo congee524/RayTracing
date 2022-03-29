@@ -11,14 +11,15 @@ class Material(ABC):
     def scatter(self, r_in, rec, attenuation, scattered):
         pass
 
-    def random_unit_sphere():
-        r = random.random()
-        phi = math.pi * random.random()
-        theta = 2 * math.pi * random.random()
 
-        p = Vec3(r * math.cos(theta) * math.sin(phi),
-                 r * math.sin(theta) * math.sin(phi), r * math.cos(phi))
-        return p
+def random_unit_sphere():
+    r = random.random()
+    phi = math.pi * random.random()
+    theta = 2 * math.pi * random.random()
+
+    p = Vec3(r * math.cos(theta) * math.sin(phi),
+             r * math.sin(theta) * math.sin(phi), r * math.cos(phi))
+    return p
 
 
 class Lambertian(Material):
@@ -31,7 +32,7 @@ class Lambertian(Material):
     def scatter(self, r_in, rec, attenuation, scattered):
         # r_in is useless in Lambertian scatter
 
-        direction = rec.normal + Material.random_unit_sphere()
+        direction = rec.normal + random_unit_sphere()
         if direction.near_zero():
             direction = rec.normal
 
@@ -58,7 +59,7 @@ class Metal(Material):
     def scatter(self, r_in, rec, attenuation, scattered):
         reflect_dir = Metal.reflect(r_in.direction().normalize(), rec.normal)
         scattered.orig = rec.p
-        scattered.dir = reflect_dir + self.fuzz * Material.random_unit_sphere()
+        scattered.dir = reflect_dir + self.fuzz * random_unit_sphere()
         for i in range(3):
             attenuation[i] = self.albedo[i]
         return reflect_dir * rec.normal > 0

@@ -3,7 +3,6 @@ import argparse
 import itertools
 import random
 import os.path as osp
-from turtle import color
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -31,15 +30,16 @@ def cal_color(r, world, depth):
     assert isinstance(world, HittableList), 'world must be HittableList'
     assert isinstance(depth, int), 'depth must be int'
 
+    if depth >= 50:
+        return Color(0)
+
     hit_rec = HitRecord()
 
-    if world.hit(r, 0.001, float('inf'), hit_rec):
+    if world.hit(r, 0, float('inf'), hit_rec):
         scattered = Ray(Point(), Vec3())
         attenuation = Color()
-        res = hit_rec.material.scatter(r, hit_rec, attenuation, scattered)
-        if depth < 2 and res:
-            return attenuation * cal_color(scattered, world, depth + 1)
-        return Color(0)
+        hit_rec.material.scatter(r, hit_rec, attenuation, scattered)
+        return attenuation * cal_color(scattered, world, depth + 1)
 
     t = 0.5 * r.direction().normalize().y + 0.5
     return (1.0 - t) * Color(1, 1, 1) + t * Color(0.5, 0.7, 1.0)
@@ -50,11 +50,11 @@ def ray_tracing(output_file):
     columns = 100
     samples = 100
 
-    # camera = Camera()
+    camera = Camera()
     # camera = Camera(Point(-1.5, 2, 0.5), Point(0, 0, -1), Vec3(0, 1, 0), 90,
     #                 float(rows) / float(columns))
-    camera = Camera(Point(0), Point(0, 0, -1), Vec3(0, 1, 0), 90,
-                    float(rows) / float(columns))
+    # camera = Camera(Point(0), Point(0, 0, -1), Vec3(0, 1, 0), 90,
+    #                 float(rows) / float(columns))
 
     import scene.example as scene
     world = scene.world
@@ -75,7 +75,8 @@ def ray_tracing(output_file):
     for i, j, color in results:
         img[i][j] += color
     img /= samples
-    img = (np.sqrt(img) * 255.99).astype(int)
+    # img = (np.sqrt(img) * 255.99).astype(int)
+    img = (img * 255.99).astype(int)
 
     img = img.transpose(1, 0, 2)
 
@@ -87,7 +88,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_2.ppm',
+                        default='output/output_7.ppm',
                         help='output file')
     args = parser.parse_args()
 
