@@ -9,8 +9,7 @@ from joblib import Parallel, delayed
 
 from vec import Vec3, Point, Color
 from ray import Ray
-from hittable import HitRecord
-from hittable_list import HittableList
+from hittable import HitRecord, HittableList
 from camera import Camera
 
 

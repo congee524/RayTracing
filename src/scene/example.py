@@ -1,7 +1,7 @@
 from vec import Point, Color
 from sphere import Sphere
 from material import Lambertian, Metal
-from hittable_list import HittableList
+from hittable import HittableList
 
 obj_list = [
     Sphere(Point(0, 0, -1), 0.5, Lambertian(Color(0.1, 0.2, 0.5))),

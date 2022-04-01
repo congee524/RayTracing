@@ -7,7 +7,16 @@ from ray import Ray
 
 class Camera():
 
-    def __init__(self, look_from, look_at, vup, vfov, aspect, aperture, focus):
+    def __init__(self,
+                 look_from,
+                 look_at,
+                 vup,
+                 vfov,
+                 aspect,
+                 aperture,
+                 focus,
+                 t0=0.,
+                 t1=0.):
         """Camera
 
         Args:
@@ -17,6 +26,8 @@ class Camera():
             vfov (int|float): vertical field of view
             aspect (_type_): _description_
         """
+        self.time0 = float(t0)
+        self.time1 = float(t1)
         self.lens_raidus = aperture / 2
         self.theta = vfov * math.pi / 180
         self.half_height = math.tan(self.theta / 2) * focus
@@ -41,4 +52,5 @@ class Camera():
         rd = self.lens_raidus * Camera.random_unit_disk()
         offset = self.u * rd.x + self.v * rd.y
         direction = self.bl_corner + s * self.horizontal + t * self.vertical - self.origin - offset
-        return Ray(Point(self.origin + offset), direction)
+        time = self.time0 + random.random() * (self.time1 - self.time0)
+        return Ray(Point(self.origin + offset), direction, time)
