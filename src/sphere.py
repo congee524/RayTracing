@@ -18,10 +18,9 @@ class Sphere(Hittable):
         self.radius = float(radius)
         self.material = material
 
-    def hit(self, r, t_min, t_max, rec):
+    def hit(self, r, t_min, t_max):
         # only record the nearest intersection
         assert isinstance(r, Ray), "r must be Ray"
-        assert isinstance(rec, HitRecord), "rec must be HitRecord"
         assert isinstance(t_min, (float, int)), "t_min must be scalar"
         assert isinstance(t_max, (float, int)), "t_max must be scalar"
 
@@ -32,7 +31,7 @@ class Sphere(Hittable):
         discriminant = half_b * half_b - a * c
 
         if discriminant < 0:
-            return False
+            return None
 
         sqrtd = math.sqrt(discriminant)
 
@@ -40,16 +39,17 @@ class Sphere(Hittable):
         if root <= t_min or root >= t_max:
             root = (-half_b + sqrtd) / a
             if root <= t_min or root >= t_max:
-                return False
+                return None
 
-        rec.t = root
-        rec.p = Point(r.at(rec.t))
-        rec.normal = (rec.p - self.center) / self.radius
-        rec.material = self.material
+        hit_rec = HitRecord()
+        hit_rec.p = Point(r.at(root))
+        hit_rec.t = root
+        hit_rec.normal = (hit_rec.p - self.center) / self.radius
+        hit_rec.material = self.material
 
-        return True
+        return hit_rec
 
-    def get_box(self):
+    def bounding_box(self):
         return Aabb(self.center - Vec3(self.radius),
                     self.center + Vec3(self.radius))
 
@@ -83,7 +83,7 @@ class MovingSphere(Hittable):
         discriminant = half_b * half_b - a * c
 
         if discriminant < 0:
-            return False
+            return None
 
         sqrtd = math.sqrt(discriminant)
 
@@ -91,16 +91,17 @@ class MovingSphere(Hittable):
         if root <= t_min or root >= t_max:
             root = (-half_b + sqrtd) / a
             if root <= t_min or root >= t_max:
-                return False
+                return None
 
-        rec.t = root
-        rec.p = Point(r.at(rec.t))
-        rec.normal = (rec.p - self.center(r.time())) / self.radius
-        rec.material = self.material
+        hit_rec = HitRecord()
+        hit_rec.p = Point(r.at(root))
+        hit_rec.t = root
+        hit_rec.normal = (hit_rec.p - self.center(r.time())) / self.radius
+        hit_rec.material = self.material
 
-        return True
+        return hit_rec
 
-    def get_box(self):
+    def bounding_box(self):
         _radius = Vec3(self.radius)
         box0 = Aabb(self.center0 - _radius, self.center0 + _radius)
         box1 = Aabb(self.center1 - _radius, self.center1 + _radius)

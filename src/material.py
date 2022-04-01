@@ -1,8 +1,11 @@
 import math
 import random
 from abc import ABC, abstractmethod
+from sqlite3 import SQLITE_CREATE_TABLE
 
 from vec import Vec3, Color
+from ray import Ray
+from texture import ConstantTexture
 
 
 class Material(ABC):
@@ -25,43 +28,42 @@ class Lambertian(Material):
 
     def __init__(self, albedo=None):
         if albedo is None:
-            albedo = Color(0.8, 0.3, 0.3)
+            albedo = ConstantTexture(Color(0.8, 0.3, 0.3))
         self.albedo = albedo
 
-    def scatter(self, r_in, rec, attenuation, scattered):
+    def scatter(self, r_in, rec):
         # r_in is useless in Lambertian scatter
-
         direction = rec.normal + Material.random_unit_sphere()
         if direction.near_zero():
             direction = rec.normal
 
-        scattered.orig = rec.p
-        scattered.dir = direction
+        scattered = Ray(rec.p, direction)
+        attenuation = self.albedo.value(0, 0, rec.p)
 
-        for i in range(3):
-            attenuation[i] = self.albedo[i]
-
-        return True
+        return attenuation, scattered
 
 
 class Metal(Material):
 
     def __init__(self, albedo=None, fuzz=0.):
         if albedo is None:
-            albedo = Color(0.8, 0.3, 0.3)
+            albedo = ConstantTexture(Color(0.8, 0.3, 0.3))
         self.albedo = albedo
         fuzz = float(fuzz)
         fuzz = fuzz if fuzz >= 0 else 0.
         fuzz = fuzz if fuzz <= 1 else 1.
         self.fuzz = fuzz
 
-    def scatter(self, r_in, rec, attenuation, scattered):
-        reflect_dir = Metal.reflect(r_in.direction().normalize(), rec.normal)
-        scattered.orig = rec.p
-        scattered.dir = reflect_dir + self.fuzz * Material.random_unit_sphere()
-        for i in range(3):
-            attenuation[i] = self.albedo[i]
-        return reflect_dir * rec.normal > 0
+    def scatter(self, r_in, rec):
+        _ref_dir = Metal.reflect(r_in.direction().normalize(), rec.normal)
+        ref_dir = _ref_dir + self.fuzz * Material.random_unit_sphere()
+
+        scattered = Ray(rec.p, ref_dir)
+        attenuation = self.albedo.value(0, 0, rec.p)
+
+        if ref_dir * rec.normal > 0:
+            return attenuation, scattered
+        return None, None
 
     def reflect(r_in, normal):
         return r_in - normal * (2 * (r_in * normal))

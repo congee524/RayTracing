@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import random
 
 from vec import Vec3, Point
 from material import Material
@@ -9,11 +10,11 @@ from ray import Ray
 class Hittable(ABC):
 
     @abstractmethod
-    def hit(self, r, t_min, t_max, rec):
+    def hit(self, r, t_min, t_max):
         pass
 
     @abstractmethod
-    def get_box():
+    def bounding_box(self):
         pass
 
 
@@ -60,27 +61,87 @@ class HittableList(Hittable):
         else:
             self.objs.append(to_append)
 
-    def hit(self, r, t_min, t_max, rec):
+    def bounding_box(self):
+        box = None
+        for obj in self.objs:
+            box = Aabb.surrounding_box(box, obj.bounding_box())
+        return box
+
+    def hit(self, r, t_min, t_max):
         assert isinstance(r, Ray), "r must be Ray"
-        assert isinstance(rec, HitRecord), "rec must be HitRecord"
         assert isinstance(t_min, (float, int)), "t_min must be scalar"
         assert isinstance(t_max, (float, int)), "t_max must be scalar"
 
-        temp_hit_rec = HitRecord()
+        hit_rec = None
         temp_t = t_max
-        hit_anything = False
 
         for hittable_obj in self.objs:
-            if hittable_obj.hit(r, t_min, temp_t, temp_hit_rec):
-                hit_anything = True
+            temp_hit_rec = hittable_obj.hit(r, t_min, temp_t)
+            if temp_hit_rec is not None:
+                hit_rec = temp_hit_rec
                 temp_t = temp_hit_rec.t
-                rec.t = temp_hit_rec.t
-                rec.p = temp_hit_rec.p
-                rec.normal = temp_hit_rec.normal
-                rec.material = temp_hit_rec.material
 
-        return hit_anything
+        return hit_rec
+
+
+def compareX(obj):
+    box = obj.bounding_box()
+    assert box is not None
+    return box._min[0]
+
+
+def compareY(obj):
+    box = obj.bounding_box()
+    assert box is not None
+    return box._min[1]
+
+
+def compareZ(obj):
+    box = obj.bounding_box()
+    assert box is not None
+    return box._min[2]
 
 
 class BvhNode(Hittable):
-    pass
+
+    def __init__(self, world, time0, time1):
+        axis = random.randint(0, 2)
+        if axis == 0:
+            world = sorted(world, key=compareX)
+        elif axis == 1:
+            world = sorted(world, key=compareY)
+        else:
+            world = sorted(world, key=compareZ)
+        n = len(world)
+        if n == 1:
+            self.left = world
+            self.right = world
+        elif n == 2:
+            self.left = world[0]
+            self.right = world[1]
+        else:
+            self.left = BvhNode(world[:n // 2 + 1], time0, time1)
+            self.right = BvhNode(world[n // 2:], time0, time1)
+
+        box_left = self.left.bounding_box()
+        box_right = self.right.bounding_box()
+        self.box = Aabb.surrounding_box(box_left, box_right)
+
+    def bounding_box(self):
+        return self.box
+
+    def hit(self, r, t_min, t_max):
+        if self.box.hit(r, t_min, t_max):
+            left_rec = self.left.hit(r, t_min, t_max)
+            right_rec = self.right.hit(r, t_min, t_max)
+            if (left_rec is not None) and (right_rec is not None):
+                if left_rec.t < right_rec.t:
+                    return left_rec
+                else:
+                    return right_rec
+            elif left_rec is not None:
+                return left_rec
+            elif right_rec is not None:
+                return right_rec
+
+        return None

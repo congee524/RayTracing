@@ -30,6 +30,10 @@ class Aabb():
         return True
 
     def surrounding_box(box0, box1):
+        if box0 is None:
+            return box1
+        if box1 is None:
+            return box0
         small = Vec3([fmin(box0._min[i], box1._min[i]) for i in range(3)])
         big = Vec3([fmax(box0._max[i], box1._max[i]) for i in range(3)])
         return Aabb(small, big)

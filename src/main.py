@@ -9,7 +9,7 @@ from joblib import Parallel, delayed
 
 from vec import Vec3, Point, Color
 from ray import Ray
-from hittable import HitRecord, HittableList
+from hittable import HittableList
 from camera import Camera
 
 
@@ -29,16 +29,15 @@ def cal_color(r, world, depth):
     assert isinstance(world, HittableList), 'world must be HittableList'
     assert isinstance(depth, int), 'depth must be int'
 
-    if depth >= 50:
-        return Color(0)
-
-    hit_rec = HitRecord()
-
-    if world.hit(r, 0, float('inf'), hit_rec):
+    hit_rec = world.hit(r, 0, float('inf'))
+    if hit_rec is not None:
         scattered = Ray(Point(), Vec3())
-        attenuation = Color()
-        hit_rec.material.scatter(r, hit_rec, attenuation, scattered)
-        return attenuation * cal_color(scattered, world, depth + 1)
+        attenuation = Color(0)
+        attenuation, scattered = hit_rec.material.scatter(r, hit_rec)
+        if attenuation is not None and depth < 50:
+            return attenuation * cal_color(scattered, world, depth + 1)
+        else:
+            return Color(0)
 
     t = 0.5 * r.direction().normalize().y + 0.5
     return (1.0 - t) * Color(1, 1, 1) + t * Color(0.5, 0.7, 1.0)
@@ -74,7 +73,6 @@ def ray_tracing(output_file):
     for i, j, color in results:
         img[i][j] += color
     img /= samples
-    # img = (np.sqrt(img) * 255.99).astype(int)
     img = (np.sqrt(img) * 255.99).astype(int)
 
     img = img.transpose(1, 0, 2)
@@ -87,7 +85,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_9.ppm',
+                        default='output/output_10.ppm',
                         help='output file')
     args = parser.parse_args()
 
