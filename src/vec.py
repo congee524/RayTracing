@@ -150,7 +150,7 @@ class Vec3():
     def normalize(self):
         length = self.length()
         return self / length
-    
+
     def near_zero(self):
         return math.isclose(self * self, 0.)
 

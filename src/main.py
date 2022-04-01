@@ -50,11 +50,11 @@ def ray_tracing(output_file):
     columns = 100
     samples = 100
 
-    camera = Camera()
-    # camera = Camera(Point(-1.5, 2, 0.5), Point(0, 0, -1), Vec3(0, 1, 0), 90,
-    #                 float(rows) / float(columns))
-    # camera = Camera(Point(0), Point(0, 0, -1), Vec3(0, 1, 0), 90,
-    #                 float(rows) / float(columns))
+    look_from = Point(3, 3, 2)
+    look_at = Point(0, 0, -1)
+    focus = (look_from - look_at).length()
+    aspect = float(rows) / float(columns)
+    camera = Camera(look_from, look_at, Vec3(0, 1, 0), 20, aspect, 2.0, focus)
 
     import scene.example as scene
     world = scene.world
@@ -76,7 +76,7 @@ def ray_tracing(output_file):
         img[i][j] += color
     img /= samples
     # img = (np.sqrt(img) * 255.99).astype(int)
-    img = (img * 255.99).astype(int)
+    img = (np.sqrt(img) * 255.99).astype(int)
 
     img = img.transpose(1, 0, 2)
 
@@ -88,7 +88,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_7.ppm',
+                        default='output/output_9.ppm',
                         help='output file')
     args = parser.parse_args()
 

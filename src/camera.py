@@ -1,27 +1,5 @@
-# import math
-
-# from vec import Vec3, Point
-# from ray import Ray
-
-# class Camera():
-
-#     def __init__(self, look_from, look_at, vup, vfov, aspect):
-#         self.theta = vfov * math.pi / 180
-#         self.half_h = math.tan(self.theta / 2)
-#         self.half_w = aspect * self.half_h
-
-#         w = (look_from - look_at).normalize()
-#         u = vup.cross(w).normalize()
-#         v = w.cross(u)
-
-#         self.origin = look_from
-#         self.bl_corner = self.origin - u * self.half_w - v * self.half_h - w
-#         self.horizontal = u * self.half_w * 2
-#         self.vertical = v * self.half_h * 2
-
-#     def get_ray(self, u, v):
-#         direction = self.bl_corner - self.origin + u * self.horizontal + v * self.vertical
-#         return Ray(self.origin, direction)
+import math
+import random
 
 from vec import Vec3, Point
 from ray import Ray
@@ -29,29 +7,38 @@ from ray import Ray
 
 class Camera():
 
-    def __init__(self,
-                 origin=None,
-                 bl_corner=None,
-                 horizontal=None,
-                 vertical=None):
-        if origin is None:
-            origin = Point()
-        if bl_corner is None:
-            bl_corner = Point(-2, -1, -1)
-        if horizontal is None:
-            horizontal = Vec3(4, 0, 0)
-        if vertical is None:
-            vertical = Vec3(0, 2, 0)
-        assert isinstance(origin, Point)
-        assert isinstance(bl_corner, Point)
-        assert isinstance(horizontal, Vec3)
-        assert isinstance(vertical, Vec3)
+    def __init__(self, look_from, look_at, vup, vfov, aspect, aperture, focus):
+        """Camera
 
-        self.origin = origin
-        self.bl_corner = bl_corner
-        self.horizontal = horizontal
-        self.vertical = vertical
+        Args:
+            look_from (Point): the position of camera
+            look_at (Point): the center of the screen
+            vup (_type_): _description_
+            vfov (int|float): vertical field of view
+            aspect (_type_): _description_
+        """
+        self.lens_raidus = aperture / 2
+        self.theta = vfov * math.pi / 180
+        self.half_height = math.tan(self.theta / 2) * focus
+        self.half_width = aspect * self.half_height
 
-    def get_ray(self, u, v):
-        direction = self.bl_corner - self.origin + u * self.horizontal + v * self.vertical
-        return Ray(self.origin, direction)
+        self.w = (look_from - look_at).normalize()
+        self.u = vup.cross(self.w).normalize()
+        self.v = self.w.cross(self.u)
+
+        self.origin = look_from
+        self.bl_corner = self.origin - self.u * self.half_width - self.v * self.half_height - self.w * focus
+        self.horizontal = 2 * self.u * self.half_width
+        self.vertical = 2 * self.v * self.half_height
+
+    def random_unit_disk():
+        while True:
+            p = 2 * Vec3(random.random(), random.random(), 0) - Vec3(1, 1, 0)
+            if p * p < 1:
+                return p
+
+    def get_ray(self, s, t):
+        rd = self.lens_raidus * Camera.random_unit_disk()
+        offset = self.u * rd.x + self.v * rd.y
+        direction = self.bl_corner + s * self.horizontal + t * self.vertical - self.origin - offset
+        return Ray(Point(self.origin + offset), direction)
