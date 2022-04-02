@@ -234,3 +234,147 @@ class YzRect(Hittable):
     def bounding_box(self):
         return Aabb(Vec3(self.k - 0.0001, self.y0, self.z0),
                     Vec3(self.k + 0.0001, self.y1, self.z1))
+
+
+class Triangle(Hittable):
+
+    def __init__(self, p1, p2, p3, mat):
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
+        self.material = mat
+        e1 = p2 - p1
+        e2 = p3 - p1
+        self.surf_normal = Vec3.cross(e2, e1).normalize()
+
+    def hit(self, r, t_min, t_max):
+        e1 = self.p2 - self.p1
+        e2 = self.p3 - self.p1
+        dir = r.direction
+
+        pvec = Vec3.cross(dir, e2)
+        det = Vec3.dot(e1, pvec)
+
+        if math.isclose(det, 0.):
+            return None
+
+        inv_det = 1.0 / det
+        tvec = r.origin - self.p1
+        u = Vec3.dot(tvec, pvec) * inv_det
+
+        if u < 0 or u > 1:
+            return None
+
+        qvec = Vec3.cross(tvec, e1)
+        v = Vec3.dot(dir, qvec) * inv_det
+
+        if v < 0 or u + v > 1:
+            return None
+
+        t = Vec3.dot(e2, qvec) * inv_det
+
+        if t > 0.00001 and t > t_min and t < t_max:
+            hit_rec = HitRecord()
+            hit_rec.t = t
+            hit_rec.p = r.at(t)
+            hit_rec.normal = self.surf_normal
+            hit_rec.material = self.material
+            hit_rec.u = u
+            hit_rec.v = v
+            return hit_rec
+        return None
+
+    def bounding_box(self):
+        p_list = [self.p1, self.p2, self.p3]
+        min_x, max_x = min([p[0] for p in p_list]), max([p[0] for p in p_list])
+        min_y, max_y = min([p[1] for p in p_list]), max([p[1] for p in p_list])
+        min_z, max_z = min([p[2] for p in p_list]), max([p[2] for p in p_list])
+
+        return Aabb(Vec3(min_x, min_y, min_z), Vec3(max_x, max_y, max_z))
+
+
+class XzCylinder(Hittable):
+
+    def __init__(self, cen, h, r, mat):
+        self.center = cen
+        self.height = float(h)
+        self.raidus = float(r)
+        self.material = mat
+
+    def hit(self, r, t_min, t_max):
+        temp_t = t_max
+        hit_rec = None
+
+        # calculate the intersection in the two bottom surface
+        if not math.isclose(r.direction.y, 0):
+            surf1_center = self.center + Vec3(0, self.height / 2, 0)
+            surf2_center = self.center - Vec3(0, self.height / 2, 0)
+            t1 = (surf1_center.y - r.origin.y) / r.direction.y
+            p1 = r.at(t1)
+            if (p1 - surf1_center).length() < self.raidus:
+                if t_min < t1 < t_max:
+                    temp_t = t1
+                    hit_rec = HitRecord()
+                    hit_rec.p = p1
+                    hit_rec.normal = Vec3(0, 1, 0)
+                    hit_rec.t = temp_t
+                    hit_rec.material = self.material
+            t2 = (surf2_center.y - r.origin.y) / r.direction.y
+            p2 = r.at(t2)
+            if (p2 - surf2_center).length() < self.raidus:
+                if t_min < t2 < temp_t:
+                    temp_t = t2
+                    hit_rec = HitRecord()
+                    hit_rec.p = p2
+                    hit_rec.normal = Vec3(0, -1, 0)
+                    hit_rec.t = temp_t
+                    hit_rec.material = self.material
+
+        # calculate the intersection in the side
+        if math.isclose(r.direction.x, 0.) and math.isclose(r.direction.z, 0.):
+            return hit_rec
+
+        P, D = r.origin, r.direction
+        A = D.x * D.x + D.z * D.z
+        B = P.x * P.x + P.z * D.z
+        C = P.x * P.x + P.z * P.z - self.raidus * self.raidus
+        delta = B * B - A * C
+
+        if delta < 0.:
+            return hit_rec
+        root = math.sqrt(delta)
+        inv = 1.0 / A
+        t1 = (-B - root) * inv
+        p1 = r.at(t1)
+        if surf2_center.y < p1.y < surf1_center.y:
+            if t_min < t1 < temp_t:
+                temp_t = t1
+                hit_rec = HitRecord()
+                hit_rec.p = p1
+                hit_rec.normal = Vec3(p1.x - self.center.x, 0,
+                                      p1.z - self.center.z).normalize()
+                hit_rec.t = temp_t
+                hit_rec.material = self.material
+
+        t2 = (-B + root) * inv
+        p2 = r.at(t2)
+        if surf2_center.y < p2.y < surf1_center.y:
+            if t_min < t1 < temp_t:
+                temp_t = t2
+                hit_rec = HitRecord()
+                hit_rec.p = p2
+                hit_rec.normal = Vec3(p2.x - self.center.x, 0,
+                                      p2.z - self.center.z).normalize()
+                hit_rec.t = temp_t
+                hit_rec.material = self.material
+
+        return hit_rec
+
+    def bounding_box(self):
+        _min = Vec3(self.center.x - self.raidus,
+                    self.center.y - self.height / 2,
+                    self.center.z - self.raidus)
+        _max = Vec3(self.center.x + self.raidus,
+                    self.center.y + self.height / 2,
+                    self.center.z + self.raidus)
+        return Aabb(_min, _max)
