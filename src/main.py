@@ -25,36 +25,26 @@ def write_ppm_file(output_file, img, rows, columns):
 
 
 def cal_color(r, world, depth):
-    assert isinstance(r, Ray), "r must be Ray"
-    assert isinstance(world, HittableList), 'world must be HittableList'
-    assert isinstance(depth, int), 'depth must be int'
-
-    hit_rec = world.hit(r, 0, float('inf'))
+    hit_rec = world.hit(r, 0.001, float('inf'))
     if hit_rec is not None:
-        scattered = Ray(Point(), Vec3())
-        attenuation = Color(0)
+        light = hit_rec.material.emitted(hit_rec.u, hit_rec.v, hit_rec.p)
         attenuation, scattered = hit_rec.material.scatter(r, hit_rec)
         if attenuation is not None and depth < 50:
-            return attenuation * cal_color(scattered, world, depth + 1)
+            return light + attenuation * cal_color(scattered, world, depth + 1)
         else:
-            return Color(0)
+            return light
 
-    t = 0.5 * r.direction().normalize().y + 0.5
-    return (1.0 - t) * Color(1, 1, 1) + t * Color(0.5, 0.7, 1.0)
+    return Color(0)
 
 
 def ray_tracing(output_file):
-    rows = 200
-    columns = 100
     samples = 100
-
-    look_from = Point(3, 3, 2)
-    look_at = Point(0, 0, -1)
-    focus = (look_from - look_at).length()
-    aspect = float(rows) / float(columns)
-    camera = Camera(look_from, look_at, Vec3(0, 1, 0), 20, aspect, 2.0, focus)
+    use_multiprocessing = True
 
     import scene.example as scene
+    rows = scene.rows
+    columns = scene.columns
+    camera = scene.camera
     world = scene.world
 
     def cal_ray_tracing(i, j):
@@ -64,10 +54,16 @@ def ray_tracing(output_file):
         color = cal_color(ray_r, world, 0)
         return (i, j, color)
 
-    results = Parallel(n_jobs=-1)(
-        delayed(cal_ray_tracing)(i, j)
-        for i, j in itertools.product(range(rows), range(columns))
-        for _ in range(samples))
+    if use_multiprocessing:
+        results = Parallel(n_jobs=-1)(
+            delayed(cal_ray_tracing)(i, j)
+            for i, j in itertools.product(range(rows), range(columns))
+            for _ in range(samples))
+    else:
+        results = []
+        for i, j in itertools.product(range(rows), range(columns)):
+            for _ in range(samples):
+                results.append(cal_ray_tracing(i, j))
 
     img = np.zeros((rows, columns, 3), float)
     for i, j, color in results:
@@ -85,7 +81,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_10.ppm',
+                        default='output/output_11.ppm',
                         help='output file')
     args = parser.parse_args()
 

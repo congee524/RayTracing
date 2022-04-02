@@ -1,11 +1,23 @@
-from vec import Point, Color
-from sphere import Sphere
+from vec import Vec3, Point, Color
+from geometry import Sphere
 from material import Lambertian, Metal
-from texture import ConstantTexture
+from texture import ConstantTexture, CheckerTexture
 from hittable import HittableList
+from camera import Camera
+
+rows = 200
+columns = 100
+look_from = Point(3, 3, 2)
+look_at = Point(0, 0, -1)
+focus = (look_from - look_at).length()
+aspect = float(rows) / float(columns)
+camera = Camera(look_from, look_at, Vec3(0, 1, 0), 20, aspect, 2.0, focus)
+
 
 mat_1 = Lambertian(ConstantTexture(Color(0.1, 0.2, 0.5)))
-mat_2 = Metal(ConstantTexture(Color(0.8, 0.8, 0)), 0.3)
+mat_2 = Metal(
+    CheckerTexture(ConstantTexture(Color(0.2, 0.3, 0.1)),
+                   ConstantTexture(Color(0.9, 0.9, 0.9))), 0.3)
 mat_3 = Lambertian(ConstantTexture(Color(0., 0., 1.)))
 mat_4 = Lambertian(ConstantTexture(Color(1, 0, 0)))
 

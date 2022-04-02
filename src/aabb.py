@@ -17,9 +17,9 @@ class Aabb():
 
     def hit(self, r, t_min, t_max):
         for i in range(3):
-            div = 1.0 / r.direction()[i]
-            t1 = (self._min[i] - r.origin()[i]) * div
-            t2 = (self._max[i] - r.origin()[i]) * div
+            div = 1.0 / r.direction[i]
+            t1 = (self._min[i] - r.origin[i]) * div
+            t2 = (self._max[i] - r.origin[i]) * div
             if div < 0.:
                 t1, t2 = t2, t1
             t_min = t1 if t1 > t_min else t_min

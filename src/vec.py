@@ -55,8 +55,14 @@ class Vec3():
     def __add__(self, other):
         if isinstance(other, Vec3):
             return Vec3(self.x + other.x, self.y + other.y, self.z + other.z)
+        elif isinstance(other, (float, int)):
+            return Vec3(self.x + other, self.y + other, self.z + other)
         else:
-            raise TypeError("Unsupported operand type for +")
+            raise TypeError(
+                f"Unsupported operand type for +: {self.__class__} and {type(other)}"
+            )
+
+    __radd__ = __add__
 
     def __sub__(self, other):
         if isinstance(other, Vec3):
@@ -66,8 +72,7 @@ class Vec3():
 
     def __mul__(self, other):
         if isinstance(other, Vec3):
-            # inner product
-            return self.x * other.x + self.y * other.y + self.z * other.z
+            return Vec3(self.x * other.x, self.y * other.y, self.z * other.z)
         elif isinstance(other, (float, int)):
             return Vec3(self.x * other, self.y * other, self.z * other)
         else:
@@ -137,13 +142,20 @@ class Vec3():
         return f"{self.__class__.__name__} ({self.x}, {self.y}, {self.z})"
 
     def length(self):
-        return math.sqrt(self * self)
+        return math.sqrt(Vec3.dot(self, self))
 
-    def cross(self, other):
-        if isinstance(other, Vec3):
-            return Vec3(self.y * other.z - self.z * other.y,
-                        self.z * other.x - self.x * other.z,
-                        self.x * other.y - self.y * other.x)
+    @classmethod
+    def dot(cls, v1, v2):
+        if isinstance(v1, Vec3) and isinstance(v2, Vec3):
+            return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
+        else:
+            raise TypeError("Unsupported operand type for dot()")
+
+    @classmethod
+    def cross(cls, v1, v2):
+        if isinstance(v1, Vec3) and isinstance(v2, Vec3):
+            return Vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+                        v1.x * v2.y - v1.y * v2.x)
         else:
             raise TypeError("unsupported operand type for cross()")
 
@@ -152,7 +164,7 @@ class Vec3():
         return self / length
 
     def near_zero(self):
-        return math.isclose(self * self, 0.)
+        return math.isclose(Vec3.dot(self, self), 0.)
 
 
 class Point(Vec3):
@@ -160,9 +172,4 @@ class Point(Vec3):
 
 
 class Color(Vec3):
-
-    def __init__(self, *args):
-        super().__init__(*args)
-        assert 0. <= self.x <= 1., "r must in [0., 1.]"
-        assert 0. <= self.y <= 1., "g must in [0., 1.]"
-        assert 0. <= self.z <= 1., "b must in [0., 1.]"
+    pass

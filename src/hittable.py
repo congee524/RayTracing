@@ -20,7 +20,7 @@ class Hittable(ABC):
 
 class HitRecord():
 
-    def __init__(self, p=None, normal=None, t=0., material=None):
+    def __init__(self, p=None, normal=None, t=0., material=None, u=0., v=0.):
         if p is None:
             p = Point()
         else:
@@ -37,6 +37,8 @@ class HitRecord():
         self.normal = normal
         self.t = float(t)
         self.material = material
+        self.u = u
+        self.v = v
 
     def __repr__(self):
         return f"HitRecord at ({self.p}) with normal ({self.normal}) and t ({self.t})"
