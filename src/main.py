@@ -38,7 +38,7 @@ def cal_color(r, world, depth):
 
 
 def ray_tracing(output_file):
-    samples = 2500
+    samples = 50000
     use_multiprocessing = True
 
     import scene.example as scene
@@ -81,7 +81,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_13.ppm',
+                        default='output/output_14.ppm',
                         help='output file')
     args = parser.parse_args()
 

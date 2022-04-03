@@ -11,7 +11,7 @@ class Sphere(Hittable):
 
     def __init__(self, center, radius, material):
         assert isinstance(center, Point), "Center point must be Point"
-        assert isinstance(radius, (float, int)), "Raidus must be scalar"
+        assert isinstance(radius, (float, int)), "radius must be scalar"
         assert isinstance(material, Material), 'material must be Material'
 
         self.center = center
@@ -298,7 +298,7 @@ class XzCylinder(Hittable):
     def __init__(self, cen, h, r, mat):
         self.center = cen
         self.height = float(h)
-        self.raidus = float(r)
+        self.radius = float(r)
         self.material = mat
 
     def hit(self, r, t_min, t_max):
@@ -311,7 +311,7 @@ class XzCylinder(Hittable):
             surf2_center = self.center - Vec3(0, self.height / 2, 0)
             t1 = (surf1_center.y - r.origin.y) / r.direction.y
             p1 = r.at(t1)
-            if (p1 - surf1_center).length() < self.raidus:
+            if (p1 - surf1_center).length() < self.radius:
                 if t_min < t1 < t_max:
                     temp_t = t1
                     hit_rec = HitRecord()
@@ -321,7 +321,7 @@ class XzCylinder(Hittable):
                     hit_rec.material = self.material
             t2 = (surf2_center.y - r.origin.y) / r.direction.y
             p2 = r.at(t2)
-            if (p2 - surf2_center).length() < self.raidus:
+            if (p2 - surf2_center).length() < self.radius:
                 if t_min < t2 < temp_t:
                     temp_t = t2
                     hit_rec = HitRecord()
@@ -334,17 +334,20 @@ class XzCylinder(Hittable):
         if math.isclose(r.direction.x, 0.) and math.isclose(r.direction.z, 0.):
             return hit_rec
 
-        P, D = r.origin, r.direction
-        A = D.x * D.x + D.z * D.z
-        B = P.x * P.x + P.z * D.z
-        C = P.x * P.x + P.z * P.z - self.raidus * self.raidus
-        delta = B * B - A * C
+        _origin = Vec3(r.origin.x, 0, r.origin.z)
+        _direction = Vec3(r.direction.x, 0, r.direction.z)
+        _center = Vec3(self.center.x, 0, self.center.z)
+        oc = _origin - _center
+        a = Vec3.dot(_direction, _direction)
+        half_b = Vec3.dot(oc, _direction)
+        c = Vec3.dot(oc, oc) - self.radius * self.radius
+        discriminant = half_b * half_b - a * c
 
-        if delta < 0.:
+        if discriminant < 0.:
             return hit_rec
-        root = math.sqrt(delta)
-        inv = 1.0 / A
-        t1 = (-B - root) * inv
+
+        sqrtd = math.sqrt(discriminant)
+        t1 = (-half_b - sqrtd) / a
         p1 = r.at(t1)
         if surf2_center.y < p1.y < surf1_center.y:
             if t_min < t1 < temp_t:
@@ -356,7 +359,7 @@ class XzCylinder(Hittable):
                 hit_rec.t = temp_t
                 hit_rec.material = self.material
 
-        t2 = (-B + root) * inv
+        t2 = (-half_b + sqrtd) / a
         p2 = r.at(t2)
         if surf2_center.y < p2.y < surf1_center.y:
             if t_min < t1 < temp_t:
@@ -371,10 +374,10 @@ class XzCylinder(Hittable):
         return hit_rec
 
     def bounding_box(self):
-        _min = Vec3(self.center.x - self.raidus,
+        _min = Vec3(self.center.x - self.radius,
                     self.center.y - self.height / 2,
-                    self.center.z - self.raidus)
-        _max = Vec3(self.center.x + self.raidus,
+                    self.center.z - self.radius)
+        _max = Vec3(self.center.x + self.radius,
                     self.center.y + self.height / 2,
-                    self.center.z + self.raidus)
+                    self.center.z + self.radius)
         return Aabb(_min, _max)
