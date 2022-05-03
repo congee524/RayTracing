@@ -2,21 +2,16 @@ import math
 
 from vec import Point, Vec3
 from ray import Ray
-from hittable import Hittable, HitRecord
-from material import Material
+from hittable import Hittable, HitRecord, HittableList, FlipNormals
 from aabb import Aabb
 
 
 class Sphere(Hittable):
 
-    def __init__(self, center, radius, material):
-        assert isinstance(center, Point), "Center point must be Point"
-        assert isinstance(radius, (float, int)), "radius must be scalar"
-        assert isinstance(material, Material), 'material must be Material'
-
+    def __init__(self, center, radius, mat):
         self.center = center
         self.radius = float(radius)
-        self.material = material
+        self.mat = mat
 
     def get_sphere_uv(p):
         phi = math.atan2(p.z, p.x)
@@ -53,7 +48,7 @@ class Sphere(Hittable):
         hit_rec.t = root
         hit_rec.normal = (hit_rec.p - self.center) / self.radius
         hit_rec.u, hit_rec.v = Sphere.get_sphere_uv(hit_rec.normal)
-        hit_rec.material = self.material
+        hit_rec.mat = self.mat
 
         return hit_rec
 
@@ -70,7 +65,7 @@ class MovingSphere(Hittable):
         self.time0 = t0
         self.time1 = t1
         self.radius = r
-        self.material = m
+        self.mat = m
 
     def center(self, time):
         return self.center0 + (
@@ -105,7 +100,7 @@ class MovingSphere(Hittable):
         hit_rec.t = root
         hit_rec.normal = (hit_rec.p - self.center(r.time)) / self.radius
         hit_rec.u, hit_rec.v = Sphere.get_sphere_uv(hit_rec.normal)
-        hit_rec.material = self.material
+        hit_rec.mat = self.mat
 
         return hit_rec
 
@@ -116,21 +111,6 @@ class MovingSphere(Hittable):
         return Aabb.surrounding_box(box0, box1)
 
 
-class FlipNormals(Hittable):
-
-    def __init__(self, obj):
-        self.obj = obj
-
-    def hit(self, r, t_min, t_max):
-        hit_rec = self.obj.hit(r, t_min, t_max)
-        if hit_rec is not None:
-            hit_rec.normal = -1 * hit_rec.normal
-        return hit_rec
-
-    def bounding_box(self):
-        return self.obj.bounding_box()
-
-
 class XyRect(Hittable):
 
     def __init__(self, x0, x1, y0, y1, k, mat):
@@ -139,7 +119,7 @@ class XyRect(Hittable):
         self.y0 = y0
         self.y1 = y1
         self.k = k
-        self.material = mat
+        self.mat = mat
 
     def hit(self, r, t_min, t_max):
         t = (self.k - r.origin.z) / r.direction.z
@@ -153,7 +133,7 @@ class XyRect(Hittable):
 
         hit_rec = HitRecord()
         hit_rec.p = p
-        hit_rec.material = self.material
+        hit_rec.mat = self.mat
         hit_rec.t = t
         hit_rec.normal = Vec3(0, 0, 1)
         hit_rec.u = (p.x - self.x0) / (self.x1 - self.x0)
@@ -174,7 +154,7 @@ class XzRect(Hittable):
         self.z0 = z0
         self.z1 = z1
         self.k = k
-        self.material = mat
+        self.mat = mat
 
     def hit(self, r, t_min, t_max):
         t = (self.k - r.origin.y) / r.direction.y
@@ -188,7 +168,7 @@ class XzRect(Hittable):
 
         hit_rec = HitRecord()
         hit_rec.p = p
-        hit_rec.material = self.material
+        hit_rec.mat = self.mat
         hit_rec.t = t
         hit_rec.normal = Vec3(0, 1, 0)
         hit_rec.u = (p.x - self.x0) / (self.x1 - self.x0)
@@ -209,7 +189,7 @@ class YzRect(Hittable):
         self.z0 = z0
         self.z1 = z1
         self.k = k
-        self.material = mat
+        self.mat = mat
 
     def hit(self, r, t_min, t_max):
         t = (self.k - r.origin.x) / r.direction.x
@@ -223,7 +203,7 @@ class YzRect(Hittable):
 
         hit_rec = HitRecord()
         hit_rec.p = p
-        hit_rec.material = self.material
+        hit_rec.mat = self.mat
         hit_rec.t = t
         hit_rec.normal = Vec3(1, 0, 0)
         hit_rec.u = (p.z - self.z0) / (self.z1 - self.z0)
@@ -242,7 +222,7 @@ class Triangle(Hittable):
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
-        self.material = mat
+        self.mat = mat
         e1 = p2 - p1
         e2 = p3 - p1
         self.surf_normal = Vec3.cross(e2, e1).normalize()
@@ -278,7 +258,7 @@ class Triangle(Hittable):
             hit_rec.t = t
             hit_rec.p = r.at(t)
             hit_rec.normal = self.surf_normal
-            hit_rec.material = self.material
+            hit_rec.mat = self.mat
             hit_rec.u = u
             hit_rec.v = v
             return hit_rec
@@ -299,7 +279,7 @@ class XzCylinder(Hittable):
         self.center = cen
         self.height = float(h)
         self.radius = float(r)
-        self.material = mat
+        self.mat = mat
 
     def hit(self, r, t_min, t_max):
         temp_t = t_max
@@ -318,7 +298,7 @@ class XzCylinder(Hittable):
                     hit_rec.p = p1
                     hit_rec.normal = Vec3(0, 1, 0)
                     hit_rec.t = temp_t
-                    hit_rec.material = self.material
+                    hit_rec.mat = self.mat
             t2 = (surf2_center.y - r.origin.y) / r.direction.y
             p2 = r.at(t2)
             if (p2 - surf2_center).length() < self.radius:
@@ -328,7 +308,7 @@ class XzCylinder(Hittable):
                     hit_rec.p = p2
                     hit_rec.normal = Vec3(0, -1, 0)
                     hit_rec.t = temp_t
-                    hit_rec.material = self.material
+                    hit_rec.mat = self.mat
 
         # calculate the intersection in the side
         if math.isclose(r.direction.x, 0.) and math.isclose(r.direction.z, 0.):
@@ -357,7 +337,7 @@ class XzCylinder(Hittable):
                 hit_rec.normal = Vec3(p1.x - self.center.x, 0,
                                       p1.z - self.center.z).normalize()
                 hit_rec.t = temp_t
-                hit_rec.material = self.material
+                hit_rec.mat = self.mat
 
         t2 = (-half_b + sqrtd) / a
         p2 = r.at(t2)
@@ -369,7 +349,7 @@ class XzCylinder(Hittable):
                 hit_rec.normal = Vec3(p2.x - self.center.x, 0,
                                       p2.z - self.center.z).normalize()
                 hit_rec.t = temp_t
-                hit_rec.material = self.material
+                hit_rec.mat = self.mat
 
         return hit_rec
 
@@ -381,3 +361,29 @@ class XzCylinder(Hittable):
                     self.center.y + self.height / 2,
                     self.center.z + self.radius)
         return Aabb(_min, _max)
+
+
+class Box(Hittable):
+
+    def __init__(self, p_min, p_max, mat):
+        obj_list = [
+            XyRect(p_min.x, p_max.x, p_min.y, p_max.y, p_max.z, mat),
+            FlipNormals(
+                XyRect(p_min.x, p_max.x, p_min.y, p_max.y, p_min.z, mat)),
+            XzRect(p_min.x, p_max.x, p_min.z, p_max.z, p_max.y, mat),
+            FlipNormals(
+                XzRect(p_min.x, p_max.x, p_min.z, p_max.z, p_min.y, mat)),
+            YzRect(p_min.y, p_max.y, p_min.z, p_max.z, p_max.x, mat),
+            FlipNormals(
+                YzRect(p_min.y, p_max.y, p_min.z, p_max.z, p_min.x, mat))
+        ]
+
+        self.p_min = p_min
+        self.p_max = p_max
+        self.hit_obj_list = HittableList(obj_list)
+
+    def hit(self, r, t_min, t_max):
+        return self.hit_obj_list.hit(r, t_min, t_max)
+
+    def bounding_box(self):
+        return Aabb(self.p_min, self.p_max)

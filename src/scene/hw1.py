@@ -5,8 +5,8 @@ from texture import ConstantTexture, CheckerTexture
 from hittable import HittableList
 from camera import Camera
 
-rows = 200
-columns = 150
+rows = 400
+columns = 300
 look_from = Point(278, 278, -800)
 look_at = Point(278, 278, 0)
 focus = 10
