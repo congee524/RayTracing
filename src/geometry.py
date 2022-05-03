@@ -1,3 +1,4 @@
+import itertools
 import math
 
 from vec import Point, Vec3
@@ -219,13 +220,12 @@ class YzRect(Hittable):
 class Triangle(Hittable):
 
     def __init__(self, p1, p2, p3, mat):
-        self.p1 = p1
-        self.p2 = p2
-        self.p3 = p3
-        self.mat = mat
         e1 = p2 - p1
         e2 = p3 - p1
-        self.surf_normal = Vec3.cross(e2, e1).normalize()
+
+        self.mat = mat
+        self.p1, self.p2, self.p3 = p1, p2, p3
+        self.normal = Vec3.cross(e2, e1).normalize()
 
     def hit(self, r, t_min, t_max):
         e1 = self.p2 - self.p1
@@ -257,7 +257,7 @@ class Triangle(Hittable):
             hit_rec = HitRecord()
             hit_rec.t = t
             hit_rec.p = r.at(t)
-            hit_rec.normal = self.surf_normal
+            hit_rec.normal = self.normal
             hit_rec.mat = self.mat
             hit_rec.u = u
             hit_rec.v = v
@@ -266,6 +266,35 @@ class Triangle(Hittable):
 
     def bounding_box(self):
         p_list = [self.p1, self.p2, self.p3]
+        min_x, max_x = min([p[0] for p in p_list]), max([p[0] for p in p_list])
+        min_y, max_y = min([p[1] for p in p_list]), max([p[1] for p in p_list])
+        min_z, max_z = min([p[2] for p in p_list]), max([p[2] for p in p_list])
+
+        return Aabb(Vec3(min_x, min_y, min_z), Vec3(max_x, max_y, max_z))
+
+
+class Pyramid(Hittable):
+
+    def __init__(self, p1, p2, p3, p4, mat):
+        pyramid_center = (p1 + p2 + p3 + p4) / 4
+        obj_list = []
+        for p_list in itertools.combinations([p1, p2, p3, p4], 3):
+            surf = Triangle(*p_list, mat)
+            surf_center = sum(p_list) / 3
+            if Vec3.dot(surf.normal, pyramid_center - surf_center) > 0.:
+                obj_list.append(surf)
+            else:
+                obj_list.append(FlipNormals(surf))
+
+        self.mat = mat
+        self.hit_obj_list = HittableList(obj_list)
+        self.p1, self.p2, self.p3, self.p4 = p1, p2, p3, p4
+
+    def hit(self, r, t_min, t_max):
+        return self.hit_obj_list.hit(r, t_min, t_max)
+
+    def bounding_box(self):
+        p_list = [self.p1, self.p2, self.p3, self.p4]
         min_x, max_x = min([p[0] for p in p_list]), max([p[0] for p in p_list])
         min_y, max_y = min([p[1] for p in p_list]), max([p[1] for p in p_list])
         min_z, max_z = min([p[2] for p in p_list]), max([p[2] for p in p_list])

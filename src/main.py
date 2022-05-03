@@ -53,7 +53,7 @@ def ray_tracing(output_file):
     use_multiprocessing = True
 
     # import scene.example as scene
-    import scene.box_2_rotate_xyz as scene
+    import scene.pyramid_1 as scene
     rows = scene.rows
     columns = scene.columns
     camera = scene.camera
@@ -88,7 +88,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_2_3.ppm',
+                        default='output/output_2_4.ppm',
                         help='output file')
     args = parser.parse_args()
 
