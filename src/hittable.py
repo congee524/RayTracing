@@ -18,6 +18,13 @@ class Hittable(ABC):
     def bounding_box(self):
         pass
 
+    def pdf_value(self, origin, direction):
+        # get value of pdf function
+        raise NotImplementedError()
+
+    def random(self, origin):
+        raise NotImplementedError()
+
 
 class HitRecord():
 
@@ -38,6 +45,7 @@ class HitRecord():
         self.normal = normal
         self.t = float(t)
         self.mat = mat
+        # position
         self.u = u
         self.v = v
 
@@ -63,6 +71,7 @@ class HittableList(Hittable):
             self.objs += to_append.objs
         else:
             self.objs.append(to_append)
+        return self
 
     def bounding_box(self):
         box = None

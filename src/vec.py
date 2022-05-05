@@ -141,8 +141,11 @@ class Vec3():
     def __repr__(self):
         return f"{self.__class__.__name__} ({self.x}, {self.y}, {self.z})"
 
+    def square(self):
+        return Vec3.dot(self, self)
+
     def length(self):
-        return math.sqrt(Vec3.dot(self, self))
+        return math.sqrt(self.square())
 
     @classmethod
     def dot(cls, v1, v2):

@@ -22,11 +22,12 @@ mat_green = Lambertian(ConstantTexture(Color(0.12, 0.45, 0.15)))
 mat_blue = Lambertian(ConstantTexture(Color(0.05, 0.05, 0.73)))
 mat_light = DiffuseLight(ConstantTexture(Color(15)))
 
+lights_list = [FlipNormals(XzRect(213, 343, 227, 332, 554, mat_light))]
+
 obj_list = [
     # wall
     FlipNormals(YzRect(0, 555, 0, 555, 555, mat_green)),
     YzRect(0, 555, 0, 555, 0, mat_red),
-    XzRect(213, 343, 227, 332, 554, mat_light),
     FlipNormals(XzRect(0, 555, 0, 555, 555, mat_white)),
     XzRect(0, 555, 0, 555, 0, mat_white),
     FlipNormals(XyRect(0, 555, 0, 555, 555, mat_blue)),
@@ -37,4 +38,7 @@ obj_list = [
               Vec3(265, 0, 295))
 ]
 
+obj_list += lights_list
+
+lights = HittableList(lights_list)
 world = HittableList(obj_list)

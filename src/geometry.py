@@ -1,3 +1,4 @@
+import random
 import itertools
 import math
 
@@ -176,6 +177,23 @@ class XzRect(Hittable):
         hit_rec.v = (p.z - self.z0) / (self.z1 - self.z0)
 
         return hit_rec
+
+    def pdf_value(self, origin, direction):
+        hit_rec = self.hit(Ray(origin, direction), 1e-3, float('inf'))
+        if hit_rec is not None:
+            area = (self.x1 - self.x0) * (self.z1 - self.z0)
+            dist_sqrd = hit_rec.t * hit_rec.t * direction.square()
+            cosine = abs(
+                Vec3.dot(direction, hit_rec.normal) / direction.length())
+            ret_value = dist_sqrd / (cosine * area)
+            return ret_value
+        return 0.
+
+    def random(self, origin):
+        _x = self.x0 + random.random() * (self.x1 - self.x0)
+        _z = self.z0 + random.random() * (self.z1 - self.z0)
+        _y = self.k
+        return Vec3(_x, _y, _z) - origin
 
     def bounding_box(self):
         return Aabb(Vec3(self.x0, self.k - 0.0001, self.z0),

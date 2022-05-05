@@ -23,10 +23,11 @@ mat_blue = Lambertian(ConstantTexture(Color(0.05, 0.05, 0.73)))
 mat_light = DiffuseLight(ConstantTexture(Color(15)))
 
 obj_list = [
+    # light
+    XzRect(213, 343, 227, 332, 554, mat_light),
     # wall
     FlipNormals(YzRect(0, 555, 0, 555, 555, mat_green)),
     YzRect(0, 555, 0, 555, 0, mat_red),
-    XzRect(213, 343, 227, 332, 554, mat_light),
     FlipNormals(XzRect(0, 555, 0, 555, 555, mat_white)),
     XzRect(0, 555, 0, 555, 0, mat_white),
     FlipNormals(XyRect(0, 555, 0, 555, 555, mat_blue)),
