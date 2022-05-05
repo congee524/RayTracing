@@ -38,7 +38,6 @@ def cal_ray_color(r, world, lights, depth):
             else:
                 hit_pdfs = [HitPDF(light, hit_rec.p) for light in lights.objs]
                 mix_pdf = MixPDF(sct_rec.pdf, *hit_pdfs)
-                mix_pdf = sct_rec.pdf
 
                 sct_ray = Ray(hit_rec.p, mix_pdf.generate(), r.time)
                 sct_pdf = hit_rec.mat.scatter_pdf(r, hit_rec, sct_ray)
@@ -64,8 +63,8 @@ def cal_ray_tracing(i, j, samples, rows, columns, camera, world, lights):
 
 
 def ray_tracing(output_file):
-    samples = 100
-    use_multiprocessing = True
+    samples = 10
+    use_multiprocessing = False
 
     # import scene.example as scene
     import scene.box_2_rotate_y as scene
@@ -104,7 +103,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_2_8.ppm',
+                        default='output/output_2_11.ppm',
                         help='output file')
     args = parser.parse_args()
 

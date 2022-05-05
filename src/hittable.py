@@ -173,6 +173,12 @@ class FlipNormals(Hittable):
     def bounding_box(self):
         return self.obj.bounding_box()
 
+    def pdf_value(self, origin, direction):
+        return self.obj.pdf_value(origin, direction)
+
+    def random(self, origin):
+        return self.obj.random(origin)
+
 
 class Translate(Hittable):
 
@@ -192,6 +198,12 @@ class Translate(Hittable):
         if bbox is not None:
             bbox = Aabb(bbox._min + self.offset, bbox._max + self.offset)
         return bbox
+
+    def pdf_value(self, origin, direction):
+        return self.obj.pdf_value(origin, direction)
+
+    def random(self, origin):
+        return self.obj.random(origin)
 
 
 class Rotate(Hittable):
@@ -240,6 +252,12 @@ class Rotate(Hittable):
 
     def bounding_box(self):
         return self.bbox
+
+    def pdf_value(self, origin, direction):
+        return self.obj.pdf_value(origin, direction)
+
+    def random(self, origin):
+        return self.obj.random(origin)
 
 
 class RotateY(Rotate):

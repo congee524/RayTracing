@@ -56,7 +56,7 @@ class Lambertian(Material):
         return sctd_rec
 
     def scatter_pdf(self, r_in, rec, scattered):
-        cos = Vec3.dot(rec.normal.normalize(), scattered.direction.normalize())
+        cos = Vec3.dot(rec.normal, scattered.direction.normalize())
         cos = cos if cos > 0. else 0.
         return cos / math.pi
 

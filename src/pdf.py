@@ -22,7 +22,7 @@ class CosinePDF(PDF):
         self.uvw = ONB(_w)
 
     def value(self, direction):
-        cos = Vec3.dot(direction, self.uvw.w())
+        cos = Vec3.dot(direction.normalize(), self.uvw.w())
         cos = cos if cos > 0. else 0.
         return cos / math.pi
 
