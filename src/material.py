@@ -26,10 +26,10 @@ class Material(ABC):
         pass
 
     def emitted(self, r_in, rec):
-        return Vec3(0)
+        raise NotImplementedError
 
     def scatter_pdf(self, r_in, rec, scattered):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @classmethod
     def random_in_unit_sphere(cls):
@@ -60,6 +60,9 @@ class Lambertian(Material):
         cos = cos if cos > 0. else 0.
         return cos / math.pi
 
+    def emitted(self, r_in, rec):
+        return Vec3(0)
+
 
 class Metal(Material):
 
@@ -72,17 +75,19 @@ class Metal(Material):
         self.fuzz = fuzz
 
     def scatter(self, r_in, rec):
-        # TODO pdf
-        raise NotImplementedError()
         _ref_dir = Metal.reflect(r_in.direction.normalize(), rec.normal)
         ref_dir = _ref_dir + self.fuzz * Material.random_in_unit_sphere()
-
-        scattered = Ray(rec.p, ref_dir)
-        attenuation = self.albedo.value(0, 0, rec.p)
+        sct_ray = Ray(rec.p, ref_dir)
+        atten = self.albedo.value(0, 0, rec.p)
 
         if Vec3.dot(ref_dir, rec.normal) > 0:
-            return attenuation, scattered
-        return None, None, None
+            return ScatterRecord(atten=atten,
+                                 sct_ray=sct_ray,
+                                 is_specular=True)
+        return ScatterRecord()
+
+    def emitted(self, r_in, rec):
+        return Vec3(0)
 
     @classmethod
     def reflect(cls, r_in, normal):

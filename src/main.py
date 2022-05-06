@@ -67,7 +67,7 @@ def ray_tracing(output_file):
     use_multiprocessing = False
 
     # import scene.example as scene
-    import scene.box_2_rotate_y as scene
+    import scene.box_2_disk as scene
     rows = scene.rows
     columns = scene.columns
     camera = scene.camera

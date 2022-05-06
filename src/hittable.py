@@ -19,11 +19,10 @@ class Hittable(ABC):
         pass
 
     def pdf_value(self, origin, direction):
-        # get value of pdf function
-        raise NotImplementedError()
+        raise NotImplementedError
 
-    def random(self, origin):
-        raise NotImplementedError()
+    def random(self, origin, sample_type='uniform'):
+        raise NotImplementedError
 
 
 class HitRecord():

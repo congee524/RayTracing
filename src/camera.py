@@ -42,7 +42,8 @@ class Camera():
         self.horizontal = 2 * self.u * self.half_width
         self.vertical = 2 * self.v * self.half_height
 
-    def random_in_unit_disk():
+    @classmethod
+    def random_in_unit_disk(cls):
         while True:
             p = 2 * Vec3(random.random(), random.random(), 0) - Vec3(1, 1, 0)
             if Vec3.dot(p, p) < 1:

@@ -185,11 +185,10 @@ class XzRect(Hittable):
             dist_sqrd = hit_rec.t * hit_rec.t * direction.square()
             cosine = abs(
                 Vec3.dot(direction, hit_rec.normal) / direction.length())
-            ret_value = dist_sqrd / (cosine * area)
-            return ret_value
+            return dist_sqrd / (cosine * area)
         return 0.
 
-    def random(self, origin):
+    def random(self, origin, sample_type='uniform'):
         _x = self.x0 + random.random() * (self.x1 - self.x0)
         _z = self.z0 + random.random() * (self.z1 - self.z0)
         _y = self.k
@@ -233,6 +232,52 @@ class YzRect(Hittable):
     def bounding_box(self):
         return Aabb(Vec3(self.k - 0.0001, self.y0, self.z0),
                     Vec3(self.k + 0.0001, self.y1, self.z1))
+
+
+class XzDisk(Hittable):
+
+    def __init__(self, center, radius, mat):
+        self.center = center
+        self.radius = float(radius)
+        self.mat = mat
+
+    def hit(self, r, t_min, t_max):
+        hit_rec = None
+        if not math.isclose(r.direction.y, 0):
+            t = (self.center.y - r.origin.y) / r.direction.y
+            if t_min <= t <= t_max:
+                p = r.at(t)
+                if (p - self.center).length() < self.radius:
+                    hit_rec = HitRecord()
+                    hit_rec.p = p
+                    hit_rec.normal = Vec3(0, 1, 0)
+                    hit_rec.t = t
+                    hit_rec.mat = self.mat
+        return hit_rec
+
+    def bounding_box(self):
+        _x, _y, _z = self.center
+        _r = self.radius
+        return Aabb(Vec3(_x - _r, _y - 0.0001, _z - _r),
+                    Vec3(_x + _r, _y + 0.0001, _z + _r))
+
+    def pdf_value(self, origin, direction):
+        hit_rec = self.hit(Ray(origin, direction), 1e-3, float('inf'))
+        if hit_rec is not None:
+            area = math.pi * self.radius * self.radius / 4
+            dist_sqrd = hit_rec.t * hit_rec.t * direction.square()
+            cosine = abs(
+                Vec3.dot(direction, hit_rec.normal) / direction.length())
+            return dist_sqrd / (cosine * area)
+        return 0.
+
+    def random(self, origin, sample_type='uniform'):
+        while True:
+            _p = 2 * Vec3(random.random(), 0, random.random()) - Vec3(1, 0, 1)
+            if Vec3.dot(_p, _p) < 1:
+                break
+        p = self.center + self.radius * _p
+        return p - origin
 
 
 class Triangle(Hittable):
