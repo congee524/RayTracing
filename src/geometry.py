@@ -1,6 +1,7 @@
 import random
 import itertools
 import math
+from sampler import PoissonSampler
 
 from vec import Point, Vec3
 from ray import Ray
@@ -272,12 +273,21 @@ class XzDisk(Hittable):
         return 0.
 
     def random(self, origin, sample_type='uniform'):
+        if not hasattr(self, 'sampler'):
+            self.sampler = PoissonSampler(self.radius * 2, self.radius * 2)
+
         while True:
-            _p = 2 * Vec3(random.random(), 0, random.random()) - Vec3(1, 0, 1)
-            if Vec3.dot(_p, _p) < 1:
+            _x, _z = self.sampler.sample()
+            _p = Vec3(_x - self.radius, 0, _z - self.radius)
+            if _p.length() < self.radius:
                 break
-        p = self.center + self.radius * _p
-        return p - origin
+        return _p + self.center - origin
+        # while True:
+        #     _p = 2 * Vec3(random.random(), 0, random.random()) - Vec3(1, 0, 1)
+        #     if Vec3.dot(_p, _p) < 1:
+        #         break
+        # p = self.center + self.radius * _p
+        # return p - origin
 
 
 class Triangle(Hittable):

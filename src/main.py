@@ -103,7 +103,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_2_11.ppm',
+                        default='output/output_2_ps_1.ppm',
                         help='output file')
     args = parser.parse_args()
 
