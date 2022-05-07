@@ -21,7 +21,7 @@ class Hittable(ABC):
     def pdf_value(self, origin, direction):
         raise NotImplementedError
 
-    def random(self, origin, sample_type='uniform'):
+    def random(self, origin):
         raise NotImplementedError
 
 

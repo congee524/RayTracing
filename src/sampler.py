@@ -5,7 +5,77 @@ import numpy as np
 from collections import deque
 
 
-class PoissonSampler():
+def draw_pic(points):
+    import matplotlib.pyplot as plt
+    plt.figure('temp')
+    plt.scatter(*list(list(t) for t in zip(*points)))
+    plt.savefig('output/temp.jpg')
+    plt.close()
+
+
+def get_sampler(sample_type, *args):
+    sampler = None
+    if sample_type == 'random':
+        sampler = RandomSampler(*args)
+    elif sample_type == 'uniform':
+        sampler = UniformSampler(*args)
+    elif sample_type == 'blue_noise':
+        sampler = PoissonSampler(*args)
+    else:
+        raise ValueError(f'no {sample_type} sampler!')
+    return sampler
+
+
+class Sampler():
+
+    def sample(self):
+        raise NotImplementedError
+
+
+class RandomSampler(Sampler):
+
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def generate_random_point(self):
+        return (random.random() * self.width, random.random() * self.height)
+
+    def sample(self):
+        return self.generate_random_point()
+
+
+class UniformSampler(Sampler):
+
+    def __init__(self, width, height, dist=5):
+        self.width = width
+        self.height = height
+        self.dist = dist
+
+        self.sample_points = None
+        self.generate_uniform()
+
+    def generate_uniform(self):
+        init_point = self.generate_random_init_point()
+
+        _x, _y = init_point
+        points_x = np.arange(_x, self.width, self.dist)
+        points_y = np.arange(_y, self.height, self.dist)
+
+        points = list(itertools.product(points_x, points_y))
+        random.shuffle(points)
+        self.sample_points = deque(points)
+
+    def generate_random_init_point(self):
+        return (random.random(), random.random())
+
+    def sample(self):
+        if not self.sample_points:
+            self.generate_uniform()
+        return self.sample_points.popleft()
+
+
+class PoissonSampler(Sampler):
 
     def __init__(self, width, height, min_dist=5, num_points_per_iter=16):
         self.width = width
@@ -34,13 +104,6 @@ class PoissonSampler():
 
     def generate_random_point(self):
         return (random.random() * self.width, random.random() * self.height)
-
-    def draw_pic(self, points):
-        import matplotlib.pyplot as plt
-        plt.figure('temp')
-        plt.scatter(*list(list(t) for t in zip(*points)))
-        plt.savefig('output/temp.jpg')
-        plt.close()
 
     def check_new_point_valid(self, point):
         x, y = point
@@ -85,5 +148,5 @@ class PoissonSampler():
 
     def sample(self):
         if not self.sample_points:
-            return None
+            self.generate_poisson()
         return self.sample_points.popleft()

@@ -7,12 +7,9 @@ import multiprocessing as mp
 
 import numpy as np
 from pdf import HitPDF, MixPDF
-# from joblib import Parallel, delayed
 
-from vec import Vec3, Point, Color
+from vec import Color
 from ray import Ray
-from hittable import HittableList
-from camera import Camera
 
 
 def write_ppm_file(output_file, img, rows, columns):
@@ -63,11 +60,11 @@ def cal_ray_tracing(i, j, samples, rows, columns, camera, world, lights):
 
 
 def ray_tracing(output_file):
-    samples = 10
-    use_multiprocessing = False
+    samples = 1000
+    use_multiprocessing = True
 
     # import scene.example as scene
-    import scene.box_2_disk as scene
+    import scene.hw2 as scene
     rows = scene.rows
     columns = scene.columns
     camera = scene.camera
@@ -77,7 +74,7 @@ def ray_tracing(output_file):
     params = (samples, rows, columns, camera, world, lights)
 
     if use_multiprocessing:
-        n_jobs = 4
+        n_jobs = 32
         with mp.Pool(n_jobs) as p:
             results = p.starmap(cal_ray_tracing, [(i, j) + params
                                                   for i in range(rows)

@@ -1,7 +1,7 @@
 import random
 import itertools
 import math
-from sampler import PoissonSampler
+from sampler import get_sampler
 
 from vec import Point, Vec3
 from ray import Ray
@@ -189,7 +189,7 @@ class XzRect(Hittable):
             return dist_sqrd / (cosine * area)
         return 0.
 
-    def random(self, origin, sample_type='uniform'):
+    def random(self, origin):
         _x = self.x0 + random.random() * (self.x1 - self.x0)
         _z = self.z0 + random.random() * (self.z1 - self.z0)
         _y = self.k
@@ -237,10 +237,11 @@ class YzRect(Hittable):
 
 class XzDisk(Hittable):
 
-    def __init__(self, center, radius, mat):
+    def __init__(self, center, radius, mat, sample_type='blue_noise'):
         self.center = center
         self.radius = float(radius)
         self.mat = mat
+        self.sample_type = sample_type
 
     def hit(self, r, t_min, t_max):
         hit_rec = None
@@ -272,9 +273,10 @@ class XzDisk(Hittable):
             return dist_sqrd / (cosine * area)
         return 0.
 
-    def random(self, origin, sample_type='uniform'):
+    def random(self, origin):
         if not hasattr(self, 'sampler'):
-            self.sampler = PoissonSampler(self.radius * 2, self.radius * 2)
+            width = height = self.radius * 2
+            self.sampler = get_sampler(self.sample_type, width, height)
 
         while True:
             _x, _z = self.sampler.sample()
@@ -282,12 +284,6 @@ class XzDisk(Hittable):
             if _p.length() < self.radius:
                 break
         return _p + self.center - origin
-        # while True:
-        #     _p = 2 * Vec3(random.random(), 0, random.random()) - Vec3(1, 0, 1)
-        #     if Vec3.dot(_p, _p) < 1:
-        #         break
-        # p = self.center + self.radius * _p
-        # return p - origin
 
 
 class Triangle(Hittable):
