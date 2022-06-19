@@ -1,8 +1,7 @@
 import math
 from abc import ABC, abstractmethod
-from typing import Text
 
-from vec import Vec3, Color
+from vec import Color
 
 
 class Texture(ABC):

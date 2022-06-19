@@ -1,8 +1,8 @@
 from vec import Vec3, Point, Color
-from geometry import XyRect, YzRect, XzRect, FlipNormals, Triangle, XzCylinder, Sphere
 from material import Lambertian, DiffuseLight, Metal
 from texture import ConstantTexture, CheckerTexture
-from hittable import HittableList
+from object import (HittableList, XyRect, YzRect, XzRect, FlipNormals,
+                    Triangle, Cylinder, Sphere)
 from camera import Camera
 
 rows = 400
@@ -29,7 +29,7 @@ mat_checker = Metal(
 obj_list = [
     FlipNormals(YzRect(0, 555, 0, 555, 555, mat_green)),
     YzRect(0, 555, 0, 555, 0, mat_red),
-    XzCylinder(Vec3(278, 556, 280), 4, 80, mat_light),
+    Cylinder(Vec3(278, 556, 280), 4, 80, mat_light),
     FlipNormals(XzRect(0, 555, 0, 555, 555, mat_white)),
     XzRect(0, 555, 0, 555, 0, mat_white),
     FlipNormals(XyRect(0, 555, 0, 555, 555, mat_white)),
@@ -43,7 +43,7 @@ obj_list = [
     FlipNormals(
         Triangle(Vec3(213, 0, 332), Vec3(343, 0, 332), Vec3(278, 150, 280),
                  mat_yellow)),
-    XzCylinder(Vec3(100, 100, 100), 200, 50, mat_blue),
+    Cylinder(Vec3(100, 100, 100), 200, 50, mat_blue),
     Sphere(Point(370, 370, 370), 70, mat_checker)
 ]
 

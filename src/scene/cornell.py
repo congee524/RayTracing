@@ -1,8 +1,7 @@
 from vec import Vec3, Point, Color
-from geometry import XyRect, YzRect, XzRect, FlipNormals
 from material import Lambertian, DiffuseLight
 from texture import ConstantTexture
-from hittable import HittableList
+from object import (HittableList, XyRect, YzRect, XzRect, FlipNormals)
 from camera import Camera
 
 rows = 200

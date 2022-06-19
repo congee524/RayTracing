@@ -1,6 +1,3 @@
-from vec import Vec3, Point
-
-
 class Ray():
 
     def __init__(self, orig, dir, t=0.):
