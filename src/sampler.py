@@ -47,7 +47,7 @@ class RandomSampler(Sampler):
 
 class UniformSampler(Sampler):
 
-    def __init__(self, width, height, dist=5):
+    def __init__(self, width, height, dist=6):
         self.width = width
         self.height = height
         self.dist = dist
@@ -77,7 +77,7 @@ class UniformSampler(Sampler):
 
 class PoissonSampler(Sampler):
 
-    def __init__(self, width, height, min_dist=5, num_points_per_iter=16):
+    def __init__(self, width, height, min_dist=6, num_points_per_iter=30):
         self.width = width
         self.height = height
         self.min_dist = min_dist
@@ -133,6 +133,8 @@ class PoissonSampler(Sampler):
         first_point = self.generate_random_point()
         activate_list.append(first_point)
         self.sample_points.append(first_point)
+        grid_pos = self.get_grid_pos(first_point)
+        self.grid[grid_pos] = len(self.sample_points) - 1
 
         while activate_list:
             activate_point = activate_list.popleft()
