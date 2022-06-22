@@ -70,6 +70,15 @@ class HittableList(Hittable):
             self.objs.append(to_append)
         return self
 
+    def __getitem__(self, key):
+        return self.objs[key]
+
+    def __setitem__(self, key, val):
+        self.objs[key] = val
+
+    def __len__(self):
+        return len(self.objs)
+
     def bounding_box(self):
         box = None
         for obj in self.objs:

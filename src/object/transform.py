@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 from vec import Vec3, Point
 from ray import Ray
-from hittable import Hittable, Aabb
+from .hittable import Hittable, Aabb
 
 
 class FlipNormals(Hittable):

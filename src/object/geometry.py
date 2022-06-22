@@ -3,9 +3,9 @@ import math
 
 from vec import Point, Vec3
 from ray import Ray
-from hittable import Hittable, HitRecord, HittableList, Aabb
-from transform import FlipNormals
-from element import XyRect, XzRect, YzRect, Triangle
+from .hittable import Hittable, HitRecord, HittableList, Aabb
+from .transform import FlipNormals
+from .element import XyRect, XzRect, YzRect, Triangle
 
 
 class Sphere(Hittable):

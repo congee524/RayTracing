@@ -5,8 +5,8 @@ from object import (HittableList, FlipNormals, RotateX, RotateY, RotateZ,
                     Translate, XyRect, XzDisk, YzRect, XzRect, Box)
 from camera import Camera
 
-rows = 800
-columns = 600
+rows = 400
+columns = 300
 look_from = Point(278, 278, -800)
 look_at = Point(278, 278, 0)
 focus = 10

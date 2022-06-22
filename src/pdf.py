@@ -56,22 +56,29 @@ class HitPDF(PDF):
 
 class MixPDF(PDF):
 
-    def __init__(self, *args):
-        self.pdf_list = []
-        for arg in args:
-            self.pdf_list.append(arg)
-
+    def __init__(self, pdf_list, weights=None):
+        self.pdf_list = pdf_list
         self.num_pdf = len(self.pdf_list)
-        assert self.num_pdf > 0
-        self.avg_pr = 1.0 / self.num_pdf
+
+        if weights is None:
+            assert self.num_pdf > 0
+            self.weights = [1.0 / self.num_pdf] * self.num_pdf
+        else:
+            assert len(self.weights) == self.num_pdf
+            assert sum(self.weights) == 1
+            self.weights = weights
 
     def value(self, direction):
-        return sum(
-            [self.avg_pr * pdf.value(direction) for pdf in self.pdf_list])
+        return sum([
+            self.weights[idx] * self.pdf_list[idx].value(direction)
+            for idx in range(self.num_pdf)
+        ])
 
     def generate(self):
         _rand = random.random()
-        for i in range(self.num_pdf):
-            if _rand < (i + 1) * self.avg_pr:
-                return self.pdf_list[i].generate()
+        cnt = 0
+        for idx in range(self.num_pdf):
+            cnt += self.weights[idx]
+            if _rand < cnt:
+                return self.pdf_list[idx].generate()
         return self.pdf_list[-1].generate()

@@ -125,6 +125,9 @@ class Vec3():
         else:
             raise TypeError("Unsupported operand type for /=")
 
+    def __neg__(self):
+        return Vec3(-self.x, -self.y, -self.z)
+
     def __eq__(self, other):
         if isinstance(other, Vec3):
             return math.isclose(self.x - other.x, 0.) and math.isclose(
@@ -139,7 +142,7 @@ class Vec3():
         return 3
 
     def __repr__(self):
-        return f"{self.__class__.__name__} ({self.x}, {self.y}, {self.z})"
+        return f"{self.__class__.__name__}({self.x}, {self.y}, {self.z})"
 
     def square(self):
         return Vec3.dot(self, self)
