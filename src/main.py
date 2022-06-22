@@ -13,8 +13,7 @@ from ray import Ray
 
 
 def write_ppm_file(output_file, img, rows, columns):
-    f_out_name = osp.join(osp.dirname(__file__), "..", output_file)
-    with open(f_out_name, 'w') as f:
+    with open(output_file + '.ppm', 'w') as f:
         title = f'P3\n{rows} {columns}\n255\n'
         f.write(title)
         for j in reversed(range(columns)):
@@ -102,7 +101,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ray Tracing in Python')
     parser.add_argument('--output',
                         type=str,
-                        default='output/output_3_ns_10.ppm',
+                        default='output/output_3_ns_10',
                         help='output file')
     parser.add_argument('--samples',
                         type=int,
